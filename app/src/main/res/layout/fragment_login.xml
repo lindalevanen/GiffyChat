@@ -1,0 +1,40 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:clickable="true"
+    android:background="@color/colorAccent"
+    android:padding="20dp"
+    tools:context="com.example.linda.giffychat.Login.LoginFragment">
+
+    <EditText android:id="@+id/emailInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColorHint="#bfbfbf"
+        android:background="#ffffff"
+        android:padding="10dp"
+        android:layout_marginTop="150dp"
+        android:hint="Email"
+        android:inputType="textEmailAddress" />
+
+    <EditText android:id="@+id/passwordInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColorHint="#bfbfbf"
+        android:background="#ffffff"
+        android:padding="10dp"
+        android:layout_marginTop="10dp"
+        android:hint="Password"
+        android:inputType="textPassword"/>
+
+    <Button android:id="@+id/submitButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorPrimary"
+        android:background="#ffffff"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:layout_marginTop="20dp"
+        android:text="Login" />
+
+</LinearLayout>

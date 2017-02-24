@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorAccent"
+    tools:context="com.example.linda.giffychat.Login.StartingActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="20dp"
+        android:layout_marginTop="50dp">
+
+        <ImageView android:id="@+id/logo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/ic_giffyhand"/>
+
+        <Button android:id="@+id/loginB"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimary"
+            android:background="#ffffff"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:layout_marginTop="70dp"
+            android:layout_below="@id/logo"
+            android:text="Login" />
+
+        <Button android:id="@+id/registerB"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimary"
+            android:background="#ffffff"
+            android:layout_marginTop="10dp"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:layout_below="@id/loginB"
+            android:text="Register" />
+
+    </RelativeLayout>
+
+
+    <FrameLayout android:id="@+id/loginFrag"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="right|top">
+    </FrameLayout>
+
+    <FrameLayout android:id="@+id/registerFrag"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="right|top">
+    </FrameLayout>
+
+</RelativeLayout>

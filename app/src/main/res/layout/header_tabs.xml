@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:paddingLeft="20dp"
+    android:paddingRight="20dp"
+    android:background="@color/colorAccent"
+    android:orientation="horizontal">
+
+    <RelativeLayout android:id="@+id/tab0base"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:layout_weight="1"
+        android:tag="0">
+        <TextView
+            android:id="@+id/tab0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:textColor="#000000"
+            android:paddingRight="23dp"
+            android:paddingLeft="23dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:background="@drawable/text_border"
+            android:text="Global"/>
+    </RelativeLayout>
+
+
+    <RelativeLayout android:id="@+id/tab1base"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:layout_weight="1"
+        android:tag="1">
+        <TextView
+            android:id="@+id/tab1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:textColor="#000000"
+            android:paddingRight="23dp"
+            android:paddingLeft="23dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:text="Favorite"/>
+    </RelativeLayout>
+
+</LinearLayout>

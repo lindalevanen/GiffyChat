@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">GiffyChat</string>
+
+    <string name="register_successful">User registered successfully!</string>
+    <string name="error_weak_password">The password is too short. (min 6 chars)</string>
+    <string name="error_invalid_email">The email is invalid</string>
+    <string name="error_user_exists">A user with this email already exists</string>
+
+    <string name="error_invalid_credentials">Invalid email or password.</string>
+    <string name="search_room_by_id">Search room by id</string>
+    <string name="log_out">Log out</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="profile">Profile</string>
+
+</resources>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/recordGif"
+        android:title="Record a gif" />
+    <item android:id="@+id/showID"
+        android:title="Show room's ID" />
+
+    <item android:id="@+id/add_favorite"
+        android:title="Favorite"
+        android:icon="@drawable/ic_favorite_border"
+        android:visible="true"
+        app:showAsAction="ifRoom" />
+
+    <item android:id="@+id/remove_favorite"
+        android:title="Favorite"
+        android:icon="@drawable/ic_favorite_solid"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+</menu>

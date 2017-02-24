@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "248689045593",
+    "firebase_url": "https://giffychat.firebaseio.com",
+    "project_id": "giffychat",
+    "storage_bucket": "giffychat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:248689045593:android:fde58dbba689d79a",
+        "android_client_info": {
+          "package_name": "com.example.linda.giffychat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "248689045593-p6eli4b8024ealo4bujea710d1aj7h8q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.linda.giffychat",
+            "certificate_hash": "246D9C0D086A332941FBD48F39D5C20FC110BFC1"
+          }
+        },
+        {
+          "client_id": "248689045593-m8ajfvk9vd74tiqbh34e32me6n1j7s4g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2gl3MDKq7Sr78HxxYd1m3C_Un9ZlJnoY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "248689045593-m8ajfvk9vd74tiqbh34e32me6n1j7s4g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
