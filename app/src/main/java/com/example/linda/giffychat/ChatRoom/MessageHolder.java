@@ -42,7 +42,10 @@ public class MessageHolder extends RecyclerView.ViewHolder {
             case R.layout.message_text:
                 this.messageText = (TextView) itemView.findViewById(R.id.message_data);
                 break;
-            case R.layout.message_gif:
+            case R.layout.message_gif_portrait:
+                this.messageGif = (ImageView) itemView.findViewById(R.id.gifView);
+                break;
+            case R.layout.message_gif_landscape:
                 this.messageGif = (ImageView) itemView.findViewById(R.id.gifView);
                 break;
         }
@@ -56,9 +59,13 @@ public class MessageHolder extends RecyclerView.ViewHolder {
             case R.layout.message_text:
                 this.messageText.setText(message.getMessageData());
                 break;
-            case R.layout.message_gif:
+            case R.layout.message_gif_portrait:
                 loadGifImage(message, progDialogUpdate);
                 break;
+            case R.layout.message_gif_landscape:
+                loadGifImage(message, progDialogUpdate);
+                break;
+
         }
 
         this.messageUser.setText(message.getMessageUser());

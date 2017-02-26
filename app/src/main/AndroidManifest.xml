@@ -29,17 +29,13 @@
             android:screenOrientation="portrait"/>
         <activity
             android:name=".ChatRoom.ChatRoomActivity"
-            android:theme="@style/MainTheme"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:theme="@style/MainTheme"/>
         <activity
             android:name="com.afollestad.materialcamera.CaptureActivity"
-            android:configChanges="orientation"
-            android:screenOrientation="portrait"
             android:theme="@style/MaterialCamera.CaptureActivity" />
         <activity
             android:name="com.afollestad.materialcamera.CaptureActivity2"
-            android:configChanges="orientation"
-            android:screenOrientation="portrait"
             android:theme="@style/MaterialCamera.CaptureActivity" />
     </application>
 

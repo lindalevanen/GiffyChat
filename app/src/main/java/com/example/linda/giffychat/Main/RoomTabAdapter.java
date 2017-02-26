@@ -22,15 +22,4 @@ public class RoomTabAdapter extends FragmentPagerAdapter {
         return 2;
     }
 
-    /*@Override
-    public CharSequence getPageTitle(int position) {
-        switch (position) {
-            case 0:
-                return "Global";
-            case 1:
-                return "Favorites";
-        }
-        return null;
-    }*/
-
 }

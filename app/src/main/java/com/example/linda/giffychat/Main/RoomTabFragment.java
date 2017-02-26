@@ -120,8 +120,13 @@ public class RoomTabFragment extends Fragment {
             for(Map.Entry<String,?> entry : favorites.entrySet()){
                 favoriteRoomIds.add(entry.getKey());
             }
+            if(favoriteRoomIds.isEmpty()) {
+                progressBar.setVisibility(View.INVISIBLE);
 
-            getFavRooms(favoriteRoomIds);
+            } else {
+                getFavRooms(favoriteRoomIds);
+            }
+
         } else {
             Log.d(TAG, "There's more tabs than initialized!");
         }

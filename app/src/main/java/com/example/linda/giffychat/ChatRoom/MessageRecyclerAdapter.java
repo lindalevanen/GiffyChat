@@ -2,11 +2,14 @@ package com.example.linda.giffychat.ChatRoom;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.linda.giffychat.Entity.ChatMessage;
+import com.example.linda.giffychat.Entity.GifOrientation;
+import com.example.linda.giffychat.HelperMethods;
 import com.example.linda.giffychat.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DatabaseReference;
@@ -38,9 +41,13 @@ public class MessageRecyclerAdapter extends FirebaseRecyclerAdapter<ChatMessage,
                 messageView = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.message_text, parent, false);
                 return new MessageHolder(messageView, viewType, context);
-            case R.layout.message_gif:
+            case R.layout.message_gif_portrait:
                 messageView = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.message_gif, parent, false);
+                        .inflate(R.layout.message_gif_portrait, parent, false);
+                return new MessageHolder(messageView, viewType, context);
+            case R.layout.message_gif_landscape:
+                messageView = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.message_gif_landscape, parent, false); //TÄHÄN JÄIN, PITÄÄ LAITTAA LANDSCAPET KUNTOON
                 return new MessageHolder(messageView, viewType, context);
         }
         return super.onCreateViewHolder(parent, viewType);
@@ -53,7 +60,15 @@ public class MessageRecyclerAdapter extends FirebaseRecyclerAdapter<ChatMessage,
             case TEXTMESSAGE:
                 return R.layout.message_text;
             case GIFMESSAGE:
-                return R.layout.message_gif;
+                if(message.getGifOrientation() != 0) {
+                    if(message.getGifOrientation() == 1) {
+                        return R.layout.message_gif_portrait;
+                    } else { // GifOrientation = 2
+                        return R.layout.message_gif_landscape;
+                    }
+                } else {
+                    return R.layout.message_gif_landscape;
+                }
         }
         return super.getItemViewType(position);
     }

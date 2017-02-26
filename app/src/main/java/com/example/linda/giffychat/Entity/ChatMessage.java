@@ -13,13 +13,15 @@ public class ChatMessage {
     private String messageUser;
     private long messageTime;
     private boolean gif;
+    private int gifOrientation;     // 0 = unknown, 1 = portrait, 2 = landscape
     private String absolutePath;
 
     /* A normal chat message, messageData can be text or url to gif */
-    public ChatMessage(String messageData, String messageUser, boolean gif) {
+    public ChatMessage(String messageData, String messageUser, boolean gif, int gifOrientation) {
         this.messageData = messageData;
         this.messageUser = messageUser;
         this.gif = gif;
+        this.gifOrientation = gifOrientation;
         // Initialize to current time
         messageTime = new Date().getTime();
     }
@@ -40,6 +42,8 @@ public class ChatMessage {
 
     public boolean getGif() { return gif; }
 
+    public int getGifOrientation() { return gifOrientation; }
+
     public String getAbsolutePath() { return absolutePath; }
 
     public void setMessageTime(long messageTime) {
@@ -55,6 +59,8 @@ public class ChatMessage {
     }
 
     public void gif(boolean gif) { this.gif = gif; }
+
+    public void setGifOrientation(int gifOrientation) { this.gifOrientation = gifOrientation; }
 
     public void setAbsolutePath(String absolutePath) { this.absolutePath = absolutePath; }
 

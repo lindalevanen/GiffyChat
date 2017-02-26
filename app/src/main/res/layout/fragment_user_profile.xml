@@ -1,15 +1,85 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/profileBase"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clickable="true"
     android:background="#ffffff"
+    android:padding="20dp"
     tools:context="com.example.linda.giffychat.FeatureFragments.UserProfileFragment">
 
-    <TextView
+    <ImageView android:id="@+id/profileClose"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="Put user info here!"/>
+        android:padding="7dp"
+        android:background="@drawable/round_bg"
+        android:src="@drawable/ic_close_black_24dp"
+        android:layout_alignParentEnd="true"/>
+
+    <TextView android:id="@+id/userNameTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="80dp"
+        android:layout_marginLeft="50dp"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:text="Coco"/>
+
+    <RelativeLayout android:id="@+id/emailLO"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="40dp"
+        android:layout_below="@+id/userNameTitle">
+
+        <TextView android:id="@+id/emailText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:text="email: "/>
+
+        <TextView android:id="@+id/userEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:textSize="18sp"
+            android:layout_toRightOf="@+id/emailText"
+            android:layout_marginLeft="10dp"/>
+
+    </RelativeLayout>
+
+    <LinearLayout android:id="@+id/lelle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="15dp"
+        android:layout_below="@+id/emailLO">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:text="color: "/>
+
+        <LinearLayout android:id="@+id/colorOptions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:orientation="horizontal">
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:padding="8dp"
+        android:background="@drawable/round_bg"
+        android:text="Change your password"
+        android:textAlignment="center"/>
+
 
 </RelativeLayout>

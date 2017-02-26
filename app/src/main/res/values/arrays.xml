@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="colors">
+        <item>#FDDFDF</item>
+        <item>#FCEBDE</item>
+        <item>#FCF7DE</item>
+        <item>#DEFDE0</item>
+        <item>#DEFCEE</item>
+        <item>#DEFCFA</item>
+        <item>#DFE6FD</item>
+        <item>#E4DEFD</item>
+        <item>#F0DEFD</item>
+    </string-array>
+</resources>

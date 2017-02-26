@@ -20,6 +20,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.gifencoder.AnimatedGifEncoder;
 import com.example.linda.giffychat.ChatRoom.ChatRoomActivity;
 import com.example.linda.giffychat.Entity.ChatMessage;
+import com.example.linda.giffychat.Entity.GifOrientation;
 import com.example.linda.giffychat.Entity.Room;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -43,6 +44,8 @@ import wseemann.media.FFmpegMediaMetadataRetriever;
 
 import static android.R.attr.bitmap;
 import static android.R.attr.data;
+import static android.R.attr.orientation;
+import static android.R.attr.switchMinWidth;
 import static android.icu.util.MeasureUnit.BYTE;
 import static com.example.linda.giffychat.R.layout.room;
 import static com.facebook.FacebookSdk.getApplicationContext;
@@ -56,6 +59,8 @@ public class VideoConverter extends AsyncTask {
     private String path;
     private Context context;
     private int duration;
+    private int cameraPosition;
+    private int cameraOrientation;
     private String roomID;
     private ProgressDialog progDialogConvert;
     private ProgressDialog progDialogUpdate;
@@ -70,15 +75,19 @@ public class VideoConverter extends AsyncTask {
      * @param progDialogUpdate A Progressdialog that is to be dismissed after the chat has updated.
      * @param roomID The room's id where the gif is to be displayed
      * @param duration The duration of the gif
+     * @param cameraPosition 0 = unknown, 1 = front camera, 2 = back camera
+     * @param cameraOrientation 0 = unknown, 1 = portrait, 2 = landscape
      */
 
     public VideoConverter(Context context, String path, ProgressDialog progDialogUpdate,
-                          String roomID, int duration) {
+                          String roomID, int duration, int cameraPosition, int cameraOrientation) {
         this.context = context;
         this.path = path;
         this.roomID = roomID;
         this.duration = duration;
         this.progDialogUpdate = progDialogUpdate;
+        this.cameraPosition = cameraPosition;
+        this.cameraOrientation = cameraOrientation;
 
         Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(context,
                 VideoConverter.class));
@@ -175,7 +184,7 @@ public class VideoConverter extends AsyncTask {
                             FirebaseAuth.getInstance()
                                     .getCurrentUser()
                                     .getDisplayName(),
-                                    true)
+                                    true, cameraOrientation)
                     );
         } catch (Exception e) {
             e.printStackTrace();
@@ -191,6 +200,30 @@ public class VideoConverter extends AsyncTask {
             mmr.extractMetadata(FFmpegMediaMetadataRetriever.METADATA_KEY_ALBUM);
             mmr.extractMetadata(FFmpegMediaMetadataRetriever.METADATA_KEY_ARTIST);
 
+            float rotationDegrees = 0f;
+            int width = 160;
+            int height = 200;
+
+            switch (cameraOrientation) {
+                case 1: //portrait
+                    switch (cameraPosition) {
+                        case 1:
+                            rotationDegrees = 270f;
+                            break;
+                        case 2:
+                            rotationDegrees = 90f;
+                            break;
+                    }
+                    break;
+                case 2: //landscape and reverse-landscape hopefully on most devices
+                    if(cameraPosition == 1) {
+                        rotationDegrees = 180f;
+                    }
+                    width = 200;
+                    height = 160;
+                    break;
+            }
+
             ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
 
             for (int i = 0; i < (duration * 10); i++) {
@@ -204,13 +237,17 @@ public class VideoConverter extends AsyncTask {
                 // It's a crucial information especially because the portrait pictures somehow
                 // get saved 90 degrees cw. So whenever the user takes the gif in portrait mode I should rotate
                 // the result, but atm I don't know how to get the information how the gif was taken.
+
+                // new problem, videos recorded with front camera are saved 90 degrees ccw. These should be
+                // rotated only 90 degrees cw... But how to know the photo was taken with front camera.
+
                 if(bitmap != null) {
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 30, stream);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 50, stream);
                     byte[] temp = stream.toByteArray();
                     Bitmap compressedB = BitmapFactory.decodeByteArray(temp, 0, temp.length);
-                    Bitmap rotatedBitmap = HelperMethods.rotateBitmap(compressedB, 270f);
-                    bitmaps.add(Bitmap.createScaledBitmap(rotatedBitmap, 160, 200, false));
+                    Bitmap rotatedBitmap = HelperMethods.rotateBitmap(compressedB, rotationDegrees);
+                    bitmaps.add(Bitmap.createScaledBitmap(rotatedBitmap, width, height, false));
                 } else if (i < 30) {
                     return null;
                 }
@@ -227,9 +264,9 @@ public class VideoConverter extends AsyncTask {
 
     /**
      * Generates a gif (byte array) from Bitmap images. Very useful since we get the Bitmaps from
-     * frames from the video taken and this converts the frames to
-     * @param bitmapArray
-     * @return
+     * frames from the video taken and this converts the frames to useful byte array.
+     * @param bitmapArray the bitmaps of the gif
+     * @return a byte array gif
      */
 
     private byte[] generateGIF(ArrayList<Bitmap> bitmapArray) {

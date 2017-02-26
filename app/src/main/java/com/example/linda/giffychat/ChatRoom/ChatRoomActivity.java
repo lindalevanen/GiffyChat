@@ -83,7 +83,7 @@ public class ChatRoomActivity extends AppCompatActivity {
 
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar); //d
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         progBar = (ProgressBar) findViewById(R.id.chatProgressBar);
@@ -194,7 +194,7 @@ public class ChatRoomActivity extends AppCompatActivity {
                                     FirebaseAuth.getInstance()
                                             .getCurrentUser()
                                             .getDisplayName(),
-                                    false)
+                                    false, 0)
                             );
 
                     chatMessageInput.setText("");
@@ -483,8 +483,14 @@ public class ChatRoomActivity extends AppCompatActivity {
         // Received recording or error from MaterialCamera
         if (requestCode == CAMERA_RQ) {
             if (resultCode == RESULT_OK) {
+                Bundle extras = data.getExtras();
+                int cameraPosition = extras.getInt("position");
+                int cameraOrientation = extras.getInt("orientation");
+                System.out.println("position : "+cameraPosition);
+                System.out.println("orientation: "+cameraOrientation);
                 //Toast.makeText(this, "Saved to: " + data.getDataString(), Toast.LENGTH_LONG).show();
-                VideoConverter vc = new VideoConverter(this, data.getDataString(), progDialogUpdate, mRoomID, 4);
+                VideoConverter vc = new VideoConverter(this, data.getDataString(), progDialogUpdate,
+                        mRoomID, 4, cameraPosition, cameraOrientation);
                 vc.execute();
 
             } else if(data != null) {
