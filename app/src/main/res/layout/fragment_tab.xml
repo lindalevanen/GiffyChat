@@ -14,4 +14,12 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"/>
 
+    <TextView android:id="@+id/noFavsText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"
+        android:text="You have no favorite rooms."/>
+
 </RelativeLayout>

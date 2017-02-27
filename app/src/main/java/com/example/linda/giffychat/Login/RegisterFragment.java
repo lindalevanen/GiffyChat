@@ -24,8 +24,11 @@ import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
-public class RegisterFragment extends Fragment {
+/**
+ * Creates a view for user registering.
+ */
 
+public class RegisterFragment extends Fragment {
 
     private onRegisterListener mListener;
 

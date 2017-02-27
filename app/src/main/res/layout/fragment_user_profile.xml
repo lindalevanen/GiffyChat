@@ -62,17 +62,22 @@
             android:textSize="18sp"
             android:text="color: "/>
 
-        <LinearLayout android:id="@+id/colorOptions"
+        <HorizontalScrollView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:orientation="horizontal">
+            android:layout_marginStart="10dp">
 
-        </LinearLayout>
+            <LinearLayout android:id="@+id/colorOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+            </LinearLayout>
+
+        </HorizontalScrollView>
 
     </LinearLayout>
 
-    <TextView
+    <TextView android:id="@+id/changePasswordB"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

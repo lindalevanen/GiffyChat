@@ -26,6 +26,10 @@ import com.google.firebase.database.ValueEventListener;
 
 import static com.example.linda.giffychat.R.layout.room;
 
+/**
+ * Creates a view for room searching and searches a room by user input room id.
+ */
+
 public class SearchFragment extends Fragment {
 
     private static final String TAG = "SearchFragment";

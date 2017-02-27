@@ -1,6 +1,5 @@
 package com.example.linda.giffychat;
 
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,6 +14,10 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 
 import static com.example.linda.giffychat.R.layout.room;
+
+/**
+ * Contains some global handy helper methods.
+ */
 
 public class HelperMethods {
 

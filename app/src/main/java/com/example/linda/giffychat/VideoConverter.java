@@ -4,51 +4,29 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.ExifInterface;
-import android.media.Image;
-import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
-import android.util.Base64;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.gifencoder.AnimatedGifEncoder;
-import com.example.linda.giffychat.ChatRoom.ChatRoomActivity;
 import com.example.linda.giffychat.Entity.ChatMessage;
-import com.example.linda.giffychat.Entity.GifOrientation;
-import com.example.linda.giffychat.Entity.Room;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.crash.FirebaseCrash;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import wseemann.media.FFmpegMediaMetadataRetriever;
-
-import static android.R.attr.bitmap;
-import static android.R.attr.data;
-import static android.R.attr.orientation;
-import static android.R.attr.switchMinWidth;
-import static android.icu.util.MeasureUnit.BYTE;
-import static com.example.linda.giffychat.R.layout.room;
-import static com.facebook.FacebookSdk.getApplicationContext;
 
 /**
  * A class for converting a video in device's memory into a gif to be sent to server.
@@ -61,6 +39,7 @@ public class VideoConverter extends AsyncTask {
     private int duration;
     private int cameraPosition;
     private int cameraOrientation;
+    private int cameraRotation;
     private String roomID;
     private ProgressDialog progDialogConvert;
     private ProgressDialog progDialogUpdate;
@@ -77,10 +56,11 @@ public class VideoConverter extends AsyncTask {
      * @param duration The duration of the gif
      * @param cameraPosition 0 = unknown, 1 = front camera, 2 = back camera
      * @param cameraOrientation 0 = unknown, 1 = portrait, 2 = landscape
+     * @param cameraRotation 0 = unknown, 1 = 90 degrees cw, 2 = 180 degrees cw, 3 = 90 degrees ccw
      */
 
-    public VideoConverter(Context context, String path, ProgressDialog progDialogUpdate,
-                          String roomID, int duration, int cameraPosition, int cameraOrientation) {
+    public VideoConverter(Context context, String path, ProgressDialog progDialogUpdate, String roomID,
+                          int duration, int cameraPosition, int cameraOrientation, int cameraRotation) {
         this.context = context;
         this.path = path;
         this.roomID = roomID;
@@ -88,6 +68,7 @@ public class VideoConverter extends AsyncTask {
         this.progDialogUpdate = progDialogUpdate;
         this.cameraPosition = cameraPosition;
         this.cameraOrientation = cameraOrientation;
+        this.cameraRotation = cameraRotation;
 
         Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(context,
                 VideoConverter.class));
@@ -175,16 +156,17 @@ public class VideoConverter extends AsyncTask {
 
     private void sendPathToDB(Uri url) {
         try {
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
             FirebaseDatabase.getInstance()
                     .getReference()
                     .child("chatMessages")
                     .child(roomID)
                     .push()
                     .setValue(new ChatMessage(url.toString(),
-                            FirebaseAuth.getInstance()
-                                    .getCurrentUser()
-                                    .getDisplayName(),
-                                    true, cameraOrientation)
+                            currentUser.getDisplayName(),
+                            currentUser.getUid(),
+                            true, cameraOrientation)
                     );
         } catch (Exception e) {
             e.printStackTrace();
@@ -204,8 +186,10 @@ public class VideoConverter extends AsyncTask {
             int width = 160;
             int height = 200;
 
-            switch (cameraOrientation) {
-                case 1: //portrait
+            // hopefully the way device saves pictures rotated weirdly isn't very device specific.....
+            // The library doesn't support case 2 (reverse-portrait)
+            switch (cameraRotation) {
+                case 0: //portrait
                     switch (cameraPosition) {
                         case 1:
                             rotationDegrees = 270f;
@@ -215,12 +199,16 @@ public class VideoConverter extends AsyncTask {
                             break;
                     }
                     break;
-                case 2: //landscape and reverse-landscape hopefully on most devices
-                    if(cameraPosition == 1) {
-                        rotationDegrees = 180f;
-                    }
+                case 1: //landscape
                     width = 200;
                     height = 160;
+                    break;
+                case 3: //reverse-landscape
+                    rotationDegrees = 180f;
+                    width = 200;
+                    height = 160;
+                    break;
+                default:
                     break;
             }
 
@@ -232,14 +220,6 @@ public class VideoConverter extends AsyncTask {
 
                 // Some videos don't have the last milliseconds even though it should last the duration, that's
                 // why there's the else if (i < 30).
-                // The "Material Camera" library I use is quite limited so I'm using only portrait mode since
-                // I don't get any information from the camera activity about the orientation the image was taken.
-                // It's a crucial information especially because the portrait pictures somehow
-                // get saved 90 degrees cw. So whenever the user takes the gif in portrait mode I should rotate
-                // the result, but atm I don't know how to get the information how the gif was taken.
-
-                // new problem, videos recorded with front camera are saved 90 degrees ccw. These should be
-                // rotated only 90 degrees cw... But how to know the photo was taken with front camera.
 
                 if(bitmap != null) {
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();

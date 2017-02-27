@@ -2,17 +2,18 @@ package com.example.linda.giffychat.ChatRoom;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.linda.giffychat.Entity.ChatMessage;
-import com.example.linda.giffychat.Entity.GifOrientation;
-import com.example.linda.giffychat.HelperMethods;
 import com.example.linda.giffychat.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DatabaseReference;
+
+/**
+ * A custom class of the FirebaseRecyclerAdapter. Creates and populates type-specific viewholders for messages.
+ */
 
 public class MessageRecyclerAdapter extends FirebaseRecyclerAdapter<ChatMessage, MessageHolder> {
 
@@ -63,7 +64,7 @@ public class MessageRecyclerAdapter extends FirebaseRecyclerAdapter<ChatMessage,
                 if(message.getGifOrientation() != 0) {
                     if(message.getGifOrientation() == 1) {
                         return R.layout.message_gif_portrait;
-                    } else { // GifOrientation = 2
+                    } else {
                         return R.layout.message_gif_landscape;
                     }
                 } else {

@@ -12,6 +12,10 @@ import com.example.linda.giffychat.Main.MainActivity;
 import com.example.linda.giffychat.R;
 import com.google.firebase.auth.FirebaseAuth;
 
+/**
+ * The activity shown when the user isn't logged in and gets to choose whether to login or register.
+ */
+
 public class StartingActivity extends AppCompatActivity
         implements RegisterFragment.onRegisterListener, LoginFragment.onLoginListener {
 

@@ -1,5 +1,6 @@
 package com.example.linda.giffychat.Entity;
 
+import android.content.SharedPreferences;
 import android.net.Uri;
 
 import java.util.Date;
@@ -11,15 +12,17 @@ public class ChatMessage {
 
     private String messageData;
     private String messageUser;
+    private String messageUserID;
     private long messageTime;
     private boolean gif;
     private int gifOrientation;     // 0 = unknown, 1 = portrait, 2 = landscape
     private String absolutePath;
 
     /* A normal chat message, messageData can be text or url to gif */
-    public ChatMessage(String messageData, String messageUser, boolean gif, int gifOrientation) {
+    public ChatMessage(String messageData, String messageUser, String messageUserID, boolean gif, int gifOrientation) {
         this.messageData = messageData;
         this.messageUser = messageUser;
+        this.messageUserID = messageUserID;
         this.gif = gif;
         this.gifOrientation = gifOrientation;
         // Initialize to current time
@@ -35,6 +38,8 @@ public class ChatMessage {
     public String getMessageUser() {
         return messageUser;
     }
+
+    public String getMessageUserID() { return messageUserID; }
 
     public long getMessageTime() {
         return messageTime;
@@ -53,6 +58,8 @@ public class ChatMessage {
     public void setMessageUser(String messageUser) {
         this.messageUser = messageUser;
     }
+
+    public void setMessageUserID(String messageUserID) { this.messageUserID = messageUserID; }
 
     public void setMessageData(String messageData) {
         this.messageData = messageData;

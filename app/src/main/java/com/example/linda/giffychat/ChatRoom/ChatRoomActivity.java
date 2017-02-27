@@ -49,6 +49,7 @@ import com.example.linda.giffychat.VideoConverter;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -58,6 +59,11 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 import static android.R.attr.bitmap;
+import static android.R.attr.rotation;
+
+/**
+ * The base activity for a chat room. Contains a toolbar, a RecyclerView for messages and a message-sending field.
+ */
 
 public class ChatRoomActivity extends AppCompatActivity {
 
@@ -75,6 +81,7 @@ public class ChatRoomActivity extends AppCompatActivity {
     private RecyclerView listOfMessages;
 
     private Toolbar toolbar;
+    private boolean roomHasLogo = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,10 +105,11 @@ public class ChatRoomActivity extends AppCompatActivity {
         if(b != null) {
             mRoomID = b.getString("roomID");
             if(b.getString("base64icon") != null) {
+                roomHasLogo = true;
                 Bitmap icon = HelperMethods.getBitmapFromBase64(b.getString("base64icon"));
                 RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), icon);
                 dr.setCornerRadius(10f);
-                getSupportActionBar().setIcon(dr);
+                getSupportActionBar().setLogo(dr);
             }
             getRoomData(mRoomID);
         } else {
@@ -120,6 +128,7 @@ public class ChatRoomActivity extends AppCompatActivity {
                 mRoom = dataSnapshot.getValue(Room.class);
                 initUI();
                 initMessages();
+                hideProgbarIfNoMessages();
             }
 
             @Override
@@ -131,6 +140,27 @@ public class ChatRoomActivity extends AppCompatActivity {
         roomRef.addListenerForSingleValueEvent(roomListener);
     }
 
+    /**
+     * A bit gum solution but I couldn't figure out which method is triggered when no data is received
+     * from messages database and I have to hide the progressbar when this happens.
+     */
+
+    private void hideProgbarIfNoMessages() {
+        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference("chatMessages");
+        rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                if (!snapshot.hasChild(mRoomID)) {
+                    progBar.setVisibility(View.INVISIBLE);
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.d(TAG, databaseError.getMessage());
+            }
+        });
+    }
+
     private void initMessages() {
         listOfMessages = (RecyclerView) findViewById(R.id.chatMessageList);
 
@@ -138,7 +168,6 @@ public class ChatRoomActivity extends AppCompatActivity {
                 FirebaseDatabase.getInstance().getReference().child("chatMessages").child(mRoomID),
                 getApplicationContext(), progDialogUpdate);
 
-        //listOfMessages.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
         final LinearLayoutManager manager = new LinearLayoutManager(this);
         manager.setStackFromEnd(true);
         listOfMessages.setLayoutManager(manager);
@@ -168,14 +197,19 @@ public class ChatRoomActivity extends AppCompatActivity {
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(listOfMessages.getContext(),
                 manager.getOrientation());
+        dividerItemDecoration.setDrawable(getResources().getDrawable(R.drawable.divider_drawable, null));
         listOfMessages.addItemDecoration(dividerItemDecoration);
 
         listOfMessages.setAdapter(adapter);
     }
 
     private void initUI() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(mRoom.getTitle());
+        if(roomHasLogo) {
+            toolbar.setTitle("   "+mRoom.getTitle());
+        } else {
+            toolbar.setTitle(mRoom.getTitle());
+        }
+
 
         ((RelativeLayout) findViewById(R.id.sendMessageLO)).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -185,15 +219,16 @@ public class ChatRoomActivity extends AppCompatActivity {
                 String message = chatMessageInput.getText().toString();
 
                 if(!message.trim().isEmpty()) {
+                    FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
                     FirebaseDatabase.getInstance()
                             .getReference()
                             .child("chatMessages")
                             .child(mRoomID)
                             .push()
                             .setValue(new ChatMessage(message,
-                                    FirebaseAuth.getInstance()
-                                            .getCurrentUser()
-                                            .getDisplayName(),
+                                    currentUser.getDisplayName(),
+                                    currentUser.getUid(),
                                     false, 0)
                             );
 
@@ -486,11 +521,13 @@ public class ChatRoomActivity extends AppCompatActivity {
                 Bundle extras = data.getExtras();
                 int cameraPosition = extras.getInt("position");
                 int cameraOrientation = extras.getInt("orientation");
+                int cameraRotation = extras.getInt("rotation");
                 System.out.println("position : "+cameraPosition);
                 System.out.println("orientation: "+cameraOrientation);
+                System.out.println("rotation: "+ cameraRotation);
                 //Toast.makeText(this, "Saved to: " + data.getDataString(), Toast.LENGTH_LONG).show();
                 VideoConverter vc = new VideoConverter(this, data.getDataString(), progDialogUpdate,
-                        mRoomID, 4, cameraPosition, cameraOrientation);
+                        mRoomID, 4, cameraPosition, cameraOrientation, cameraRotation);
                 vc.execute();
 
             } else if(data != null) {
@@ -502,67 +539,3 @@ public class ChatRoomActivity extends AppCompatActivity {
     }
 
 }
-
-/* Old FirebaseListAdapter just in case RecyclerView doesn't work */
-/*adapter = new FirebaseListAdapter<ChatMessage>(this, ChatMessage.class,
-                R.layout.message, FirebaseDatabase.getInstance().getReference().child("chatMessages").child(mRoomID)) {
-            @Override
-            protected void populateView(View v, final ChatMessage model, int position) {
-                try {
-                    final TextView messageData = (TextView) v.findViewById(R.id.message_data);
-                    final TextView messageUser = (TextView) v.findViewById(R.id.message_user);
-                    final TextView messageTime = (TextView) v.findViewById(R.id.message_time);
-
-                    final ImageView messageGif = (ImageView) v.findViewById(R.id.gifView);
-
-                    if(model.getGif()) {
-                        //The message is a gif message
-                        File gifFile = getGifFromCache(model.getMessageTime());
-
-                        if(gifFile != null && gifFile.exists()) {
-                            /* When a gif is shown later, it can be fetched from phone's cache */
-                            /*Glide.with(getApplicationContext())
-                                    .load(gifFile)
-                                    .into(messageGif);
-                        } else {
-                            /* Fetch the gif from Firebase Storage when it's shown for the first time */
-                            /* Then store it to app's cache on the device */
-                            /*progDialogUpdate.dismiss();
-
-                            FirebaseStorage storage = FirebaseStorage.getInstance();
-                            StorageReference gifRef = storage.getReferenceFromUrl(model.getMessageData());
-
-                            gifRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-                                @Override
-                                public void onSuccess(byte[] bytes) {
-
-                                    writeGifToCache(bytes, model.getMessageTime());
-                                    Glide.with(getApplicationContext())
-                                            .load(bytes)
-                                            .into(messageGif);
-                                }
-                            }).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception exception) {
-                                    Log.d(TAG, exception.getMessage());
-                                }
-                            });
-                        }
-                        messageData.setText("");
-
-                    } else {
-                        //The message is a regular message
-                        messageData.setText(model.getMessageData());
-                        messageGif.setImageResource(0);
-                    }
-
-                    messageUser.setText(model.getMessageUser());
-
-                    messageTime.setText(DateFormat.format("dd-MM-yyyy (HH:mm:ss)",
-                            model.getMessageTime()));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-            }
-        };*/

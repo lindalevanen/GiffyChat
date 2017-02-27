@@ -20,6 +20,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
+import android.view.Display;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -408,10 +409,15 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     @Override
     public final void useMedia(String uri) {
         if (uri != null) {
+
+            Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+            int rotation = display.getRotation();
+
             Intent resultIntent = getIntent();
             resultIntent.putExtra(MaterialCamera.STATUS_EXTRA, MaterialCamera.STATUS_RECORDED);
             resultIntent.putExtra("position", mCameraPosition);
             resultIntent.putExtra("orientation", mCaptureOrientation);
+            resultIntent.putExtra("rotation", rotation);
             resultIntent.setDataAndType(Uri.parse(uri), useStillshot() ? "image/jpeg" : "video/mp4");
             setResult(Activity.RESULT_OK, resultIntent);
         }

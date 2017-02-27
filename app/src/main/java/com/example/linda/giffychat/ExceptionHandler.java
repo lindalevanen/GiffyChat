@@ -12,7 +12,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crash.FirebaseCrash;
 
 /**
- * Created by Linda on 22/02/17.
+ * Exits (and doesn't restart) the app when an exception has occured. Has been handy in debugging.
  */
 
 public class ExceptionHandler implements java.lang.Thread.UncaughtExceptionHandler {

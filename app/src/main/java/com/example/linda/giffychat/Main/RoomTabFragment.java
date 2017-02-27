@@ -33,6 +33,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -81,6 +83,9 @@ public class RoomTabFragment extends Fragment {
     private void displayRooms() {
         roomList = (ListView) rootView.findViewById(R.id.roomList);
         progressBar = (ProgressBar) rootView.findViewById(R.id.mainProgBar);
+        TextView noFavsText = (TextView) rootView.findViewById(R.id.noFavsText);
+        progressBar.setVisibility(View.VISIBLE);
+        noFavsText.setVisibility(View.GONE);
         if(getArguments().getInt(ARG_SECTION_NUMBER) == 1) {
 
             globalListAdapter = new FirebaseListAdapter<Room>(getActivity(), Room.class,
@@ -122,7 +127,9 @@ public class RoomTabFragment extends Fragment {
             }
             if(favoriteRoomIds.isEmpty()) {
                 progressBar.setVisibility(View.INVISIBLE);
-
+                noFavsText.setVisibility(View.VISIBLE);
+                favoriteListAdapter = new FavoriteListAdapter(getContext(), new ArrayList<Room>(), progressBar);
+                roomList.setAdapter(favoriteListAdapter);
             } else {
                 getFavRooms(favoriteRoomIds);
             }
