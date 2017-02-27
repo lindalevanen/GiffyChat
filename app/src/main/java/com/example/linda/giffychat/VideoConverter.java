@@ -187,14 +187,16 @@ public class VideoConverter extends AsyncTask {
             int height = 200;
 
             // hopefully the way device saves pictures rotated weirdly isn't very device specific.....
+            // works on samsung galaxy note 5, oneplus 3t
+            // nexus 5x turns back cam videos upside down
             // The library doesn't support case 2 (reverse-portrait)
             switch (cameraRotation) {
                 case 0: //portrait
                     switch (cameraPosition) {
-                        case 1:
+                        case 1: // from camera
                             rotationDegrees = 270f;
                             break;
-                        case 2:
+                        case 2: // back camera
                             rotationDegrees = 90f;
                             break;
                     }

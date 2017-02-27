@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.linda.giffychat.Constants;
 import com.example.linda.giffychat.Entity.ChatMessage;
 import com.example.linda.giffychat.R;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -45,10 +46,10 @@ public class MessageHolder extends RecyclerView.ViewHolder {
     private TextView messageUser;
     private TextView messageTime;
     private TextView messageText;
-    private ImageView messageGif;
+    public ImageView messageGif;
     private RelativeLayout messageBase;
 
-    private int viewType;
+    public int viewType;
     private Context context;
 
     public MessageHolder(View itemView, int viewType, Context context) {
@@ -87,7 +88,12 @@ public class MessageHolder extends RecyclerView.ViewHolder {
         }
 
         if(message.getMessageUserID() != null) {
-            loadMessageColor(message.getMessageUserID());
+            String possibleSavedColor = Constants.getUserColor(message.getMessageUserID());
+            if(possibleSavedColor != null) {
+                messageBase.setBackgroundColor(Color.parseColor(possibleSavedColor));
+            } else {
+                loadMessageColor(message.getMessageUserID());
+            }
         } else {
             messageBase.setBackgroundColor(Color.parseColor("#FFFAFAFA"));
         }
@@ -105,6 +111,7 @@ public class MessageHolder extends RecyclerView.ViewHolder {
                 if(snapshot.getValue() != null) {
                     String color = "#" + snapshot.getValue();
                     messageBase.setBackgroundColor(Color.parseColor(color));
+                    Constants.addUserColor(messageUserID, color);
                 }
             }
 
@@ -121,9 +128,13 @@ public class MessageHolder extends RecyclerView.ViewHolder {
 
         if(gifFile != null && gifFile.exists()) {
             /* When a gif is shown later, it can be fetched from phone's cache */
-            Glide.with(context)
-                    .load(gifFile)
-                    .into(messageGif);
+            try {
+                Glide.with(context)
+                        .load(gifFile)
+                        .into(messageGif);
+            } catch (OutOfMemoryError e) {
+                Toast.makeText(context, "Can't load gifs, out of memory.", Toast.LENGTH_SHORT).show();
+            }
         } else {
             /* Fetch the gif from Firebase Storage when it's shown for the first time */
             /* Then store it to app's cache on the device */
@@ -137,9 +148,14 @@ public class MessageHolder extends RecyclerView.ViewHolder {
                 public void onSuccess(byte[] bytes) {
 
                     writeGifToCache(bytes, message.getMessageTime());
-                    Glide.with(context)
-                            .load(bytes)
-                            .into(messageGif);
+                    try {
+                        Glide.with(context)
+                                .load(bytes)
+                                .into(messageGif);
+
+                    } catch (OutOfMemoryError e) {
+                        Toast.makeText(context, "Can't load gifs, out of memory.", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override

@@ -3,7 +3,10 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp">
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="20dp"
+    android:paddingBottom="10dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,7 +19,8 @@
             android:layout_weight="1"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="13dp"
-            android:maxLines="1"
+            android:singleLine="true"
+            android:maxLength="20"
             android:hint="Room name" />
 
         <ImageView android:id="@+id/addPhotoB"
@@ -26,16 +30,18 @@
 
     </LinearLayout>
 
-    <RelativeLayout
+    <RelativeLayout android:id="@+id/privateCheckLO"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
+        android:paddingEnd="10dp"
         android:orientation="horizontal"
         android:layout_below="@+id/roomNameInput">
 
         <CheckBox android:id="@+id/privateCheck"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:clickable="false"
             android:layout_centerVertical="true"/>
 
         <TextView android:id="@+id/privateText"
@@ -49,40 +55,54 @@
 
     </RelativeLayout>
 
-
-    <TextView android:id="@+id/membersEmailText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:layout_marginTop="15dp"
-        android:layout_marginLeft="5dp"
-        android:visibility="gone"
-        android:text="Members' email addresses:"/>
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <LinearLayout android:id="@+id/memberLO"
+        <RelativeLayout android:id="@+id/emailsLO"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-        </LinearLayout>
+            android:paddingBottom="10dp"
+            android:visibility="gone">
+
+            <TextView android:id="@+id/membersEmailText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:layout_marginTop="15dp"
+                android:layout_marginStart="5dp"
+                android:text="Members' email addresses:"/>
+
+            <LinearLayout android:id="@+id/memberLO"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/membersEmailText"
+                android:orientation="vertical">
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_below="@+id/memberLO"
+                android:layout_centerHorizontal="true">
+
+                <ImageButton android:id="@+id/addMemberB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ic_add_round"/>
+                <ImageButton android:id="@+id/removeMemberB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:layout_marginLeft="20dp"
+                    android:background="@drawable/ic_remove_round"/>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
 
     </ScrollView>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="10dp">
-        <ImageButton android:id="@+id/addMemberB"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:layout_centerHorizontal="true"
-            android:background="@drawable/ic_add_round"/>
-    </RelativeLayout>
-
-
 
 </LinearLayout>

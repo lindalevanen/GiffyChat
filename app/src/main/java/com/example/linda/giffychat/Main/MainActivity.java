@@ -37,6 +37,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.linda.giffychat.ChatRoom.ChatRoomActivity;
+import com.example.linda.giffychat.Constants;
 import com.example.linda.giffychat.Entity.Room;
 import com.example.linda.giffychat.ExceptionHandler;
 import com.example.linda.giffychat.FeatureFragments.SearchFragment;
@@ -62,8 +63,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.R.attr.bitmap;
+import static android.R.attr.dial;
+import static android.view.View.GONE;
 import static com.example.linda.giffychat.HelperMethods.hash;
+import static com.example.linda.giffychat.R.id.emailText;
 import static java.lang.System.currentTimeMillis;
+import static junit.runner.Version.id;
+
+/**
+ * The activity that's created when the user opens the app when logged in.
+ * Contains a toolbar with search, profile and logout functionalities and a RoomTabFragments in a ViewPager.
+ */
 
 public class MainActivity extends AppCompatActivity
         implements RoomTabFragment.onRoomOpenListener, SearchFragment.onOpenRoomListener, UserProfileFragment.onFinishListener {
@@ -79,12 +89,15 @@ public class MainActivity extends AppCompatActivity
     private ImageView roomImage;
     private String base64roomImage;
 
-    private FirebaseAnalytics mFirebaseAnalytics;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.content_main);
+
+        // usercolors get reset on app restart
+        if(Constants.userColors == null) {
+            Constants.initUserColors();
+        }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -92,28 +105,20 @@ public class MainActivity extends AppCompatActivity
         Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this,
                 MainActivity.class));
 
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-
         ((FloatingActionButton) findViewById(R.id.addRoomB)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 makeNewRoom();
-                /*FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-                user.sendEmailVerification()
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (task.isSuccessful()) {
-                                    Log.d(TAG, "Email sent.");
-                                }
-                            }
-                        });*/
             }
         });
 
         initTabStructure();
     }
+
+    /**
+     * Adds a new room to room db.
+     * @param room the room to be added
+     */
 
     private void addRoom(Room room) {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
@@ -146,54 +151,49 @@ public class MainActivity extends AppCompatActivity
         trans.commit();
     }
 
+    /**
+     * Removes the UserProfileFragment if it's attached to the activity.
+     */
+
     public void onProfileClose() {
         FragmentManager manager = getSupportFragmentManager();
         FragmentTransaction trans = manager.beginTransaction();
         UserProfileFragment profileFrag = (UserProfileFragment) manager.findFragmentById(R.id.profile_fragment);
-        trans.remove(profileFrag).commit();
+        if(profileFrag != null) {
+            trans.remove(profileFrag).commit();
+        }
     }
+
+    /**
+     * Removes the SearchFragment if it's attached to the activity.
+     */
+
+    private void onSearchClose() {
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction trans = manager.beginTransaction();
+        SearchFragment searchFrag = (SearchFragment) manager.findFragmentById(R.id.search_fragment);
+        if(searchFrag != null) {
+            trans.remove(searchFrag).commit();
+        }
+    }
+
+    /**
+     * Shows a room creation dialog so the user can create a new room.
+     */
 
     private void makeNewRoom() {
         LayoutInflater li = LayoutInflater.from(this);
         final View dialogLO = li.inflate(R.layout.dialog_make_room, null);
         final LinearLayout membersLO = (LinearLayout) dialogLO.findViewById(R.id.memberLO);
 
-        ((ImageButton) dialogLO.findViewById(R.id.addMemberB)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                membersLO.addView(newMemberInput());
-            }
-        });
-
+        final RelativeLayout emailsLO = (RelativeLayout) dialogLO.findViewById(R.id.emailsLO);
+        final ImageView addMemberButton = (ImageView) dialogLO.findViewById(R.id.addMemberB);
+        final ImageView removeMemberButton = (ImageView) dialogLO.findViewById(R.id.removeMemberB);
+        final CheckBox box = ((CheckBox) dialogLO.findViewById(R.id.privateCheck));
         roomImage = (ImageView) dialogLO.findViewById(R.id.addPhotoB);
+        final RelativeLayout privateLOCheck = ((RelativeLayout) dialogLO.findViewById(R.id.privateCheckLO));
 
-        roomImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                requestGroupPhoto();
-            }
-        });
-
-        //TODO: add possibility to remove members
-        View.OnClickListener privateCheckListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                CheckBox box = ((CheckBox) dialogLO.findViewById(R.id.privateCheck));
-                if(box.isChecked()) {
-                    membersLO.addView(newMemberInput());
-                    ((TextView) dialogLO.findViewById(R.id.membersEmailText)).setVisibility(View.VISIBLE);
-                    ((ImageButton) dialogLO.findViewById(R.id.addMemberB)).setVisibility(View.VISIBLE);
-                } else {
-                    if(membersLO.getChildCount() > 0) {
-                        membersLO.removeAllViews();
-                    }
-                    ((TextView) dialogLO.findViewById(R.id.membersEmailText)).setVisibility(View.GONE);
-                    ((ImageButton) dialogLO.findViewById(R.id.addMemberB)).setVisibility(View.GONE);
-                }
-            }
-        };
-
-        ((CheckBox) dialogLO.findViewById(R.id.privateCheck)).setOnClickListener(privateCheckListener);
+        setRoomCreationListeners(membersLO, emailsLO, addMemberButton, removeMemberButton, box, roomImage, privateLOCheck);
 
         final AlertDialog d = new AlertDialog.Builder(this)
                 .setView(dialogLO)
@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity
 
                         if(!roomName.isEmpty()) {
 
-                            List<String> emails = new ArrayList<String>();
+                            ArrayList<String> emails = new ArrayList<String>();
                             for (int i = 0; i < membersLO.getChildCount(); i++) {
                                 EditText emailInput = (EditText) membersLO.getChildAt(i);
                                 String email = emailInput.getText().toString().trim();
@@ -223,25 +223,9 @@ public class MainActivity extends AppCompatActivity
                                     emails.add(email);
                                 }
                             }
-                            String ownEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
-                            if(!emails.isEmpty() && !emails.contains(ownEmail)) {
-                                emails.add(ownEmail);
-                            }
+                            Room newRoom = createNewRoom(emails, roomName, box.isChecked());
 
-                            Room newRoom;
-                            String id = generateID();
-                            if(emails.isEmpty()) {
-                                newRoom = new Room(id, roomName, null, base64roomImage);
-                            } else {
-                                newRoom = new Room(id, roomName, emails, base64roomImage);
-                            }
-
-                            favoritePrefs = getApplication()
-                                    .getSharedPreferences(MainActivity.favoritePrefsName, Context.MODE_PRIVATE);
-                            SharedPreferences.Editor editor = favoritePrefs.edit();
-                            editor.putBoolean(id, true);
-                            editor.apply();
-
+                            favoriteRoom(newRoom);
                             addRoom(newRoom);
                             openRoomIfMember(newRoom);
 
@@ -263,11 +247,119 @@ public class MainActivity extends AppCompatActivity
         d.show();
     }
 
+    /**
+     * A method for setting listeners for the views used in room creating dialog.
+     * @param membersLO The LinearLayout where the email EditText-views are located
+     * @param emailsLO the RelativeLayout which appears when privatebox is checked.
+     * @param addMemberButton a Button for adding an EditText field for a new email address.
+     * @param removeMemberButton a Button for removing an EditText field when there's 2 or more fields.
+     * @param box The private checkbox just for visual effect.
+     * @param roomImage An ImageView for a preview of the room image
+     * @param privateLOCheck Both the checkbox and the TextView "Private". When pressed, toggles the checkbox.
+     */
+
+    private void setRoomCreationListeners(final LinearLayout membersLO, final RelativeLayout emailsLO,
+                                          final ImageView addMemberButton, final ImageView removeMemberButton,
+                                          final CheckBox box, final ImageView roomImage,
+                                          final RelativeLayout privateLOCheck) {
+
+        addMemberButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                membersLO.addView(newMemberInput());
+                removeMemberButton.setVisibility(View.VISIBLE);
+            }
+        });
+
+        removeMemberButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                membersLO.removeViewAt(membersLO.getChildCount()-1);
+                if(membersLO.getChildCount() == 1) {
+                    removeMemberButton.setVisibility(GONE);
+                }
+            }
+        });
+
+        roomImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                requestGroupPhoto();
+            }
+        });
+
+        privateLOCheck.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(box.isChecked()) {
+                    box.setChecked(false);
+                    if(membersLO.getChildCount() > 0) {
+                        membersLO.removeAllViews();
+                    }
+                    emailsLO.setVisibility(View.GONE);
+                    removeMemberButton.setVisibility(View.GONE);
+                } else {
+                    box.setChecked(true);
+                    membersLO.addView(newMemberInput());
+                    emailsLO.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+    }
+
+    /**
+     * Creates a new room with data given as parameters. If the room is set to private but no members added,
+     * only the room creator can access it.
+     * @param emails The peoples' emails that can access the room
+     * @param roomName The name of the room
+     * @param isPrivate tells if the room is private (private-box checked)
+     * @return the newly created room
+     */
+
+    private Room createNewRoom(ArrayList<String> emails, String roomName, boolean isPrivate) {
+        Room newRoom;
+        String id = generateID();
+        if(isPrivate) {
+            String ownEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+            if(!emails.contains(ownEmail)) {
+                emails.add(ownEmail);
+            }
+
+            newRoom = new Room(id, roomName, emails, base64roomImage);
+        } else {
+            newRoom = new Room(id, roomName, null, base64roomImage);
+        }
+
+        return newRoom;
+    }
+
+    /**
+     * Adds a room to user's favorites.
+     * @param room the room to be added to favorites
+     */
+
+    private void favoriteRoom(Room room) {
+        favoritePrefs = getApplication()
+                .getSharedPreferences(MainActivity.favoritePrefsName, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = favoritePrefs.edit();
+        editor.putBoolean(room.getId(), true);
+        editor.apply();
+    }
+
+    /**
+     * Starts an intent that lets the user to choose an image from their gallery.
+     */
+
     private void requestGroupPhoto() {
         Intent pickPhoto = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(pickPhoto , GALLERY_PHOTO_REQUEST_CODE);
+        startActivityForResult(pickPhoto, GALLERY_PHOTO_REQUEST_CODE);
     }
+
+    /**
+     * Creates a new EditText for the room creation dialog to be used as a new member's email input field.
+     * @return The new email EditText
+     */
 
     private EditText newMemberInput() {
         EditText newMember = new EditText(getApplicationContext());
@@ -285,6 +377,11 @@ public class MainActivity extends AppCompatActivity
         return newMember;
     }
 
+    /**
+     * Opens a chat room.
+     * @param room The room to be opened.
+     */
+
     public void openRoom(Room room) {
         Intent intent = new Intent(getApplicationContext(), ChatRoomActivity.class);
         Bundle b = new Bundle();
@@ -296,6 +393,11 @@ public class MainActivity extends AppCompatActivity
         startActivity(intent);
     }
 
+    /**
+     * Opens a room if the user is a member of that room, or if the room is public.
+     * @param room the room to be opened
+     */
+
     public void openRoomIfMember(final Room room) {
 
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference("chatRooms").child(room.getId());
@@ -306,7 +408,7 @@ public class MainActivity extends AppCompatActivity
                     String ownEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
                     for (DataSnapshot ds : snapshot.child("members").getChildren()) {
                         if(ds.getValue().equals(ownEmail)) {
-                            closeSearchIfOpen();
+                            onSearchClose();
                             openRoom(room);
                             return;
                         }
@@ -314,7 +416,7 @@ public class MainActivity extends AppCompatActivity
                     Toast.makeText(getApplicationContext(),
                             "You are not a member of this private room!", Toast.LENGTH_SHORT).show();
                 } else {
-                    closeSearchIfOpen();
+                    onSearchClose();
                     openRoom(room);
                 }
             }
@@ -324,15 +426,6 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, databaseError.getMessage());
             }
         });
-    }
-
-    private void closeSearchIfOpen() {
-        FragmentManager manager = getSupportFragmentManager();
-        FragmentTransaction trans = manager.beginTransaction();
-        SearchFragment searchFrag = (SearchFragment) manager.findFragmentById(R.id.search_fragment);
-        if(searchFrag != null) {
-            trans.remove(searchFrag).commit();
-        }
     }
 
     private String generateID() {
@@ -372,7 +465,7 @@ public class MainActivity extends AppCompatActivity
                         tab1.setBackgroundResource(R.drawable.text_border);
                         break;
                     default:
-                        System.out.println("More tabs than initialized!!!");
+                        Log.d(TAG, "More tabs than initialized!!!");
                         break;
                 }
             }

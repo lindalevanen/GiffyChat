@@ -166,7 +166,7 @@ public class ChatRoomActivity extends AppCompatActivity {
 
         adapter = new MessageRecyclerAdapter(ChatMessage.class, R.layout.md_listitem, MessageHolder.class,
                 FirebaseDatabase.getInstance().getReference().child("chatMessages").child(mRoomID),
-                getApplicationContext(), progDialogUpdate);
+                this, progDialogUpdate);
 
         final LinearLayoutManager manager = new LinearLayoutManager(this);
         manager.setStackFromEnd(true);

@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import static com.example.linda.giffychat.HelperMethods.getBitmapFromBase64;
 
 /**
- * A very simple list adapter for the items in "Favorites" tab
+ * A very simple list adapter for the items in "Favorites" tab.
  */
 
 public class FavoriteListAdapter extends ArrayAdapter<Room> {

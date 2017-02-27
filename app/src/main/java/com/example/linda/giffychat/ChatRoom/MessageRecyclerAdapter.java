@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.bumptech.glide.Glide;
 import com.example.linda.giffychat.Entity.ChatMessage;
 import com.example.linda.giffychat.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -72,6 +73,22 @@ public class MessageRecyclerAdapter extends FirebaseRecyclerAdapter<ChatMessage,
                 }
         }
         return super.getItemViewType(position);
+    }
+
+    /**
+     * A possible solution to outOfMemoryError.
+     * TODO: search for a way to release the memory when destroying chat room activity.
+     * @param holder
+     */
+
+    @Override
+    public void onViewRecycled(MessageHolder holder) {
+        super.onViewRecycled(holder);
+        MessageHolder viewHolder = (MessageHolder) holder;
+        if(holder.viewType == R.layout.message_gif_portrait ||
+                holder.viewType  == R.layout.message_gif_landscape) {
+            Glide.clear(viewHolder.messageGif);
+        }
     }
 
 }

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="5dp">
 
     <ImageView android:id="@+id/roomIcon"
         android:layout_width="60dp"
-        android:layout_height="60dp"/>
+        android:layout_height="60dp"
+        android:layout_centerVertical="true"/>
 
     <TextView android:id="@+id/roomTitle"
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -16,8 +16,10 @@
         android:textStyle="bold"
         android:textColor="#000000"
         android:textSize="17sp"
-        android:paddingLeft="30dp"
+        android:layout_toEndOf="@id/roomIcon"
+        android:paddingStart="30dp"
+        android:paddingEnd="20dp"
         android:paddingTop="20dp"
         android:paddingBottom="20dp" />
 
-</LinearLayout>
+</RelativeLayout>
