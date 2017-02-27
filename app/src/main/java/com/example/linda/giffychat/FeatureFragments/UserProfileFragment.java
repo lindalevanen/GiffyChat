@@ -20,6 +20,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.linda.giffychat.Constants;
 import com.example.linda.giffychat.HelperMethods;
 import com.example.linda.giffychat.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -173,6 +174,7 @@ public class UserProfileFragment extends Fragment {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
         DatabaseReference chatRoomRef = ref.child("userData");
         chatRoomRef.child(userid).child("color").setValue(color.substring(1));
+        Constants.addUserColor(userid, color);
         Toast.makeText(getActivity(), "Color updated!", Toast.LENGTH_SHORT).show();
     }
 

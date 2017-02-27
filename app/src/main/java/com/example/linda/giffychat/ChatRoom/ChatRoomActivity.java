@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AlertDialog;
@@ -56,9 +57,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import static android.R.attr.bitmap;
+import static android.R.attr.data;
 import static android.R.attr.rotation;
 
 /**
@@ -457,6 +460,50 @@ public class ChatRoomActivity extends AppCompatActivity {
         editor.apply();
     }
 
+    private void changeRoomLogo() {
+        Intent pickPhoto = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(pickPhoto, MainActivity.GALLERY_PHOTO_REQUEST_CODE);
+    }
+
+    private void startVideoConverter(Intent data) {
+        Bundle extras = data.getExtras();
+        int cameraPosition = extras.getInt("position");
+        int cameraOrientation = extras.getInt("orientation");
+        int cameraRotation = extras.getInt("rotation");
+        VideoConverter vc = new VideoConverter(this, data.getDataString(), progDialogUpdate,
+                mRoomID, 4, cameraPosition, cameraOrientation, cameraRotation);
+        vc.execute();
+    }
+
+    private Bitmap changeCurrentRoomLogo(Uri imageData) {
+
+        //roomImage.setAdjustViewBounds(true);
+        //roomImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+        try {
+            Bitmap bmp = HelperMethods.getBitmapFromUri(imageData, this);
+            Bitmap compressedBtm = HelperMethods.getResizedBitmap(bmp, 200);
+            Bitmap ccBtm = HelperMethods.centerCropBitmap(compressedBtm);
+            RoundedBitmapDrawable rbd = HelperMethods.giveBitmapRoundedCorners(ccBtm, this);
+            getSupportActionBar().setLogo(rbd);
+            getSupportActionBar().setTitle("   " + mRoom.getTitle());
+            return ccBtm;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private void sendNewLogoToServer(String base64) {
+        FirebaseDatabase.getInstance().getReference()
+                .child("chatRooms")
+                .child(mRoomID)
+                .child("base64RoomImage")
+                .setValue(base64);
+    }
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -507,6 +554,9 @@ public class ChatRoomActivity extends AppCompatActivity {
             case R.id.showID:
                 showRoomID();
                 return true;
+            case R.id.changeLogo:
+                changeRoomLogo();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -516,26 +566,29 @@ public class ChatRoomActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         // Received recording or error from MaterialCamera
-        if (requestCode == CAMERA_RQ) {
-            if (resultCode == RESULT_OK) {
-                Bundle extras = data.getExtras();
-                int cameraPosition = extras.getInt("position");
-                int cameraOrientation = extras.getInt("orientation");
-                int cameraRotation = extras.getInt("rotation");
-                System.out.println("position : "+cameraPosition);
-                System.out.println("orientation: "+cameraOrientation);
-                System.out.println("rotation: "+ cameraRotation);
-                //Toast.makeText(this, "Saved to: " + data.getDataString(), Toast.LENGTH_LONG).show();
-                VideoConverter vc = new VideoConverter(this, data.getDataString(), progDialogUpdate,
-                        mRoomID, 4, cameraPosition, cameraOrientation, cameraRotation);
-                vc.execute();
+        if(resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case CAMERA_RQ:
+                    startVideoConverter(data);
+                    break;
+                case MainActivity.GALLERY_PHOTO_REQUEST_CODE:
+                    //TODO: add logo to room atm in
+                    Bitmap newLogo = changeCurrentRoomLogo(data.getData());
+                    //TODO: change (.child("base64RoomImage)) to currently obtained new value
+                    if(newLogo != null) {
+                        String base64 = HelperMethods.getBase64FromBitmap(newLogo);
+                        sendNewLogoToServer(base64);
+                    }
 
-            } else if(data != null) {
-                Exception e = (Exception) data.getSerializableExtra(MaterialCamera.ERROR_EXTRA);
-                e.printStackTrace();
-                Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+                    break;
+                default:
+                    Log.d(TAG, "This requestcode is not handled: "+ requestCode);
+                    break;
             }
+        } else if(data != null) {
+            Exception e = (Exception) data.getSerializableExtra(MaterialCamera.ERROR_EXTRA);
+            e.printStackTrace();
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
-
 }

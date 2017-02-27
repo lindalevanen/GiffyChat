@@ -6,6 +6,8 @@
         android:title="Record a gif" />
     <item android:id="@+id/showID"
         android:title="Show room's ID" />
+    <item android:id="@+id/changeLogo"
+        android:title="Change room logo" />
 
     <item android:id="@+id/add_favorite"
         android:title="Favorite"

@@ -54,8 +54,9 @@ public class FavoriteListAdapter extends ArrayAdapter<Room> {
 
             Bitmap decoded = HelperMethods.getBitmapFromBase64(room.getBase64RoomImage());
             Bitmap ccBtm = HelperMethods.centerCropBitmap(decoded);
-            RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(res, ccBtm);
-            dr.setCornerRadius(10f);
+            RoundedBitmapDrawable dr = HelperMethods.giveBitmapRoundedCorners(ccBtm, getContext());
+            //RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(res, ccBtm);
+            //dr.setCornerRadius(10f);
 
             iconView.setImageDrawable(dr);
         } else {

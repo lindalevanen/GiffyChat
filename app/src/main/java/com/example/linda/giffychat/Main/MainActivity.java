@@ -13,6 +13,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -79,7 +80,7 @@ public class MainActivity extends AppCompatActivity
         implements RoomTabFragment.onRoomOpenListener, SearchFragment.onOpenRoomListener, UserProfileFragment.onFinishListener {
 
     private static final String TAG = "MainActivity";
-    private static final int GALLERY_PHOTO_REQUEST_CODE = 1;
+    public static final int GALLERY_PHOTO_REQUEST_CODE = 1;
     public static final String favoritePrefsName = "favoritePrefs";
     private SharedPreferences favoritePrefs;
 
@@ -284,7 +285,7 @@ public class MainActivity extends AppCompatActivity
         roomImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                requestGroupPhoto();
+                requestRoomLogo();
             }
         });
 
@@ -350,7 +351,7 @@ public class MainActivity extends AppCompatActivity
      * Starts an intent that lets the user to choose an image from their gallery.
      */
 
-    private void requestGroupPhoto() {
+    private void requestRoomLogo() {
         Intent pickPhoto = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(pickPhoto, GALLERY_PHOTO_REQUEST_CODE);
@@ -517,14 +518,15 @@ public class MainActivity extends AppCompatActivity
             if(resultCode == RESULT_OK){
                 Uri selectedImage = data.getData();
 
-                roomImage.setAdjustViewBounds(true);
-                roomImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                //roomImage.setAdjustViewBounds(true);
+                //roomImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
                 try {
-                    Bitmap bmp = getBitmapFromUri(selectedImage);
+                    Bitmap bmp = HelperMethods.getBitmapFromUri(selectedImage, this);
                     Bitmap compressedBtm = HelperMethods.getResizedBitmap(bmp, 200);
-                    roomImage.setImageBitmap(compressedBtm);
                     Bitmap ccBtm = HelperMethods.centerCropBitmap(compressedBtm);
+                    RoundedBitmapDrawable rbd = HelperMethods.giveBitmapRoundedCorners(ccBtm, this);
+                    roomImage.setImageDrawable(rbd);
                     base64roomImage = HelperMethods.getBase64FromBitmap(ccBtm);
                 } catch (IOException e) {
                     e.printStackTrace();

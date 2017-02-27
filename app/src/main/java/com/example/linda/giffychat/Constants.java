@@ -25,7 +25,6 @@ public class Constants {
         } else {
             return null;
         }
-
     }
 
 }
