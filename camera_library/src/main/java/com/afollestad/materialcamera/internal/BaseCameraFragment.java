@@ -18,9 +18,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -36,6 +38,7 @@ import java.io.File;
 
 import static android.R.attr.orientation;
 import static android.app.Activity.RESULT_CANCELED;
+import static android.content.Context.WINDOW_SERVICE;
 import static com.afollestad.materialcamera.internal.BaseCaptureActivity.CAMERA_POSITION_BACK;
 import static com.afollestad.materialcamera.internal.BaseCaptureActivity.FLASH_MODE_ALWAYS_ON;
 import static com.afollestad.materialcamera.internal.BaseCaptureActivity.FLASH_MODE_AUTO;
@@ -59,6 +62,8 @@ abstract class BaseCameraFragment extends Fragment implements CameraUriInterface
     protected Handler mPositionHandler;
     protected MediaRecorder mMediaRecorder;
     private int mIconTextColor;
+
+    private int mScreenRotation;
 
     protected static void LOG(Object context, String message) {
         Log.d(context instanceof Class<?> ? ((Class<?>) context).getSimpleName() :
@@ -346,6 +351,9 @@ abstract class BaseCameraFragment extends Fragment implements CameraUriInterface
 
     public boolean startRecordingVideo() {
         if (mInterface != null && mInterface.hasLengthLimit() && !mInterface.countdownImmediately()) {
+
+            Display display = ((WindowManager) getActivity().getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+            mInterface.setCaptureRotation(display.getRotation());
 
             recordingOrientation = getActivity().getResources().getConfiguration().orientation;
             mInterface.setCaptureOrientation(recordingOrientation);

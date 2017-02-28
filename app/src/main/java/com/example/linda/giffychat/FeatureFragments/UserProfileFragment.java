@@ -75,6 +75,11 @@ public class UserProfileFragment extends Fragment {
         userEmailView.setText(FirebaseAuth.getInstance().getCurrentUser().getEmail());
         usernameView.setText(FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
 
+        initListeners();
+        initColors();
+    }
+
+    private void initListeners() {
         ((ImageView) rootView.findViewById(R.id.profileClose)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -88,8 +93,6 @@ public class UserProfileFragment extends Fragment {
                 showPasswordChangePrompt();
             }
         });
-
-        initColors();
     }
 
     private void showPasswordChangePrompt() {
@@ -147,6 +150,12 @@ public class UserProfileFragment extends Fragment {
             colorLO.addView(newColor);
         }
     }
+
+    /**
+     * Makes a new color to be option in
+     * @param colorHex
+     * @return
+     */
 
     private View makeNewColor(String colorHex) {
         View newColor = new View(getContext());

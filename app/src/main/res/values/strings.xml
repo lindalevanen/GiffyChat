@@ -10,8 +10,13 @@
     <string name="search_room_by_id">Search room by id</string>
     <string name="log_out">Log out</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="profile">Profile</string>
+
+    <string name="gif_not_found">Gif not found, sorry!</string>
+    <string name="cant_load_gif">Can\'t load gifs, out of memory.</string>
+    <string name="problem_reading_file">Problem reading the gif.</string>
+    <string name="out_of_memory">Can\'t load gifs, out of memory.</string>
+    <string name="failed_to_get_gif">Failed to get the gif, sorry!</string>
+    <string name="cant_find_cache">Can\'t find app\'s cache on this device.</string>
 
 </resources>

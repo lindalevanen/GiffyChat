@@ -140,4 +140,6 @@ public interface BaseCaptureInterface {
     boolean shouldHideCameraFacing();
 
     void setCaptureOrientation(int recordingOrientation);
+
+    void setCaptureRotation(int rotation);
 }

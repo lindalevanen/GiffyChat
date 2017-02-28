@@ -28,6 +28,11 @@ import java.util.ArrayList;
 
 import wseemann.media.FFmpegMediaMetadataRetriever;
 
+import static android.R.attr.bitmap;
+import static android.R.attr.rotation;
+import static android.R.attr.thumb;
+import static android.R.attr.thumbnail;
+
 /**
  * A class for converting a video in device's memory into a gif to be sent to server.
  */
@@ -46,6 +51,7 @@ public class VideoConverter extends AsyncTask {
 
     private byte[] gif;
     private String timestamp;
+    private String thumbnailbase64;
 
     /**
      * Creates a new instance of the VideoConverter.
@@ -166,7 +172,8 @@ public class VideoConverter extends AsyncTask {
                     .setValue(new ChatMessage(url.toString(),
                             currentUser.getDisplayName(),
                             currentUser.getUid(),
-                            true, cameraOrientation)
+                            true, cameraOrientation,
+                            thumbnailbase64)
                     );
         } catch (Exception e) {
             e.printStackTrace();
@@ -216,22 +223,17 @@ public class VideoConverter extends AsyncTask {
 
             ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
 
+            Bitmap thumbnail = mmr.getFrameAtTime(0, FFmpegMediaMetadataRetriever.OPTION_CLOSEST);
+            if(thumbnail == null) return null;
+            Bitmap processedThumbnail = processBitmap(thumbnail, 7, width, height, rotationDegrees);
+            thumbnailbase64 = HelperMethods.getBase64FromBitmap(processedThumbnail);
+
             for (int i = 0; i < (duration * 10); i++) {
                 int microsec = i * 100000;
                 Bitmap bitmap = mmr.getFrameAtTime(microsec, FFmpegMediaMetadataRetriever.OPTION_CLOSEST);
-
-                // Some videos don't have the last milliseconds even though it should last the duration, that's
-                // why there's the else if (i < 30).
-
                 if(bitmap != null) {
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 50, stream);
-                    byte[] temp = stream.toByteArray();
-                    Bitmap compressedB = BitmapFactory.decodeByteArray(temp, 0, temp.length);
-                    Bitmap rotatedBitmap = HelperMethods.rotateBitmap(compressedB, rotationDegrees);
-                    bitmaps.add(Bitmap.createScaledBitmap(rotatedBitmap, width, height, false));
-                } else if (i < 30) {
-                    return null;
+                    Bitmap processedBitmap = processBitmap(bitmap, 50, width, height, rotationDegrees);
+                    bitmaps.add(processedBitmap);
                 }
             }
             mmr.release();
@@ -242,6 +244,16 @@ public class VideoConverter extends AsyncTask {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private Bitmap processBitmap(Bitmap btm, int compressionPercent, int width, int height, float rotationDegrees) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        btm.compress(Bitmap.CompressFormat.JPEG, compressionPercent, stream);
+        byte[] temp = stream.toByteArray();
+        Bitmap compressedB = BitmapFactory.decodeByteArray(temp, 0, temp.length);
+        Bitmap rotatedBitmap = HelperMethods.rotateBitmap(compressedB, rotationDegrees);
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(rotatedBitmap, width, height, false);
+        return scaledBitmap;
     }
 
     /**

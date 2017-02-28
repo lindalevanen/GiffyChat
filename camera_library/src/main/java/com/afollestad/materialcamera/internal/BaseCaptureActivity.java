@@ -36,6 +36,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
+
 /**
  * @author Aidan Follestad (afollestad)
  */
@@ -52,6 +53,7 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     private boolean mDidRecord = false;
     private List<Integer> mFlashModes;
     private int mCaptureOrientation;
+    private int mCaptureRotation;
 
     public static final int PERMISSION_RC = 69;
 
@@ -261,12 +263,10 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
         if (getCurrentCameraPosition() == CAMERA_POSITION_FRONT) {
             // Front, go to back if possible
             if (getBackCamera() != null)
-                System.out.println("switched to back");
                 setCameraPosition(CAMERA_POSITION_BACK);
         } else {
             // Back, go to front if possible
             if (getFrontCamera() != null)
-                System.out.println("switched to front");
                 setCameraPosition(CAMERA_POSITION_FRONT);
         }
     }
@@ -410,14 +410,11 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     public final void useMedia(String uri) {
         if (uri != null) {
 
-            Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
-            int rotation = display.getRotation();
-
             Intent resultIntent = getIntent();
             resultIntent.putExtra(MaterialCamera.STATUS_EXTRA, MaterialCamera.STATUS_RECORDED);
             resultIntent.putExtra("position", mCameraPosition);
             resultIntent.putExtra("orientation", mCaptureOrientation);
-            resultIntent.putExtra("rotation", rotation);
+            resultIntent.putExtra("rotation", mCaptureRotation);
             resultIntent.setDataAndType(Uri.parse(uri), useStillshot() ? "image/jpeg" : "video/mp4");
             setResult(Activity.RESULT_OK, resultIntent);
         }
@@ -609,5 +606,10 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     @Override
     public void setCaptureOrientation(int recordingOrientation) {
         this.mCaptureOrientation = recordingOrientation;
+    }
+
+    @Override
+    public void setCaptureRotation(int rotation) {
+        this.mCaptureRotation = rotation;
     }
 }

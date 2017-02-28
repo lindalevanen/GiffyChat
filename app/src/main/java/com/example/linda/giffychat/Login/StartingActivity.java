@@ -5,9 +5,11 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.example.linda.giffychat.FeatureFragments.SearchFragment;
 import com.example.linda.giffychat.Main.MainActivity;
 import com.example.linda.giffychat.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -19,6 +21,8 @@ import com.google.firebase.auth.FirebaseAuth;
 public class StartingActivity extends AppCompatActivity
         implements RegisterFragment.onRegisterListener, LoginFragment.onLoginListener {
 
+    private static final String TAG = StartingActivity.class.getSimpleName();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,7 +33,6 @@ public class StartingActivity extends AppCompatActivity
         }
 
         setUpButtonListeners();
-
     }
 
     private void setUpButtonListeners() {
@@ -63,9 +66,13 @@ public class StartingActivity extends AppCompatActivity
     }
 
     public void logIn() {
+        if(FirebaseAuth.getInstance().getCurrentUser() != null) {
+            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            finish();
+        } else {
+            Log.d(TAG, "The method logIn should't be used when Firebase hasn't registered current user.");
+        }
 
-        startActivity(new Intent(getApplicationContext(), MainActivity.class));
-        finish();
     }
 
 }

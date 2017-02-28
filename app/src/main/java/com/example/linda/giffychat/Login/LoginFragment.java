@@ -98,7 +98,7 @@ public class LoginFragment extends Fragment {
                         }
                     });
         } else {
-            Log.d(getTag(), "Can't login when a user has already logged in.");
+            Log.d(getTag(), "Can't login when a user has already logged in! This shouldn't happen.");
         }
     }
 

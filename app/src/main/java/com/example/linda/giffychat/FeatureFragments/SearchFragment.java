@@ -32,7 +32,7 @@ import static com.example.linda.giffychat.R.layout.room;
 
 public class SearchFragment extends Fragment {
 
-    private static final String TAG = "SearchFragment";
+    private static final String TAG = SearchFragment.class.getSimpleName();
     private onOpenRoomListener mListener;
 
     private View rootView;
@@ -55,15 +55,6 @@ public class SearchFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            //mParam1 = getArguments().getString(ARG_PARAM1);
-            //mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_search, container, false);
@@ -71,6 +62,12 @@ public class SearchFragment extends Fragment {
         mRoomIdInput = (EditText) rootView.findViewById(R.id.searchInput);
         mRoomIdInput.requestFocus();
 
+        initListeners();
+
+        return rootView;
+    }
+
+    public void initListeners() {
         ((ImageView) rootView.findViewById(R.id.searchB)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -92,8 +89,6 @@ public class SearchFragment extends Fragment {
 
             }
         });
-
-        return rootView;
     }
 
     private void searchForRoom(final String id) {
@@ -110,9 +105,7 @@ public class SearchFragment extends Fragment {
                         if(mFoundRoom.getBase64RoomImage() != null) {
                             Bitmap decoded = HelperMethods.getBitmapFromBase64(mFoundRoom.getBase64RoomImage());
                             Bitmap ccBtm = HelperMethods.centerCropBitmap(decoded);
-                            RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), ccBtm);
-                            dr.setCornerRadius(10f);
-
+                            RoundedBitmapDrawable dr = HelperMethods.giveBitmapRoundedCorners(ccBtm, getContext());
                             iconView.setImageDrawable(dr);
                         } else {
                             iconView.setImageResource(R.drawable.ic_giffy);
@@ -135,7 +128,6 @@ public class SearchFragment extends Fragment {
     public void openRoom(Room room) {
         if (mListener != null) {
             mListener.openRoomIfMember(room);
-
         }
     }
 

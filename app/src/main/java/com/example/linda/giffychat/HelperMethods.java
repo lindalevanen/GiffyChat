@@ -41,7 +41,6 @@ public class HelperMethods {
     public static Bitmap centerCropBitmap(Bitmap btm) {
         Bitmap dstBmp;
         if (btm.getWidth() >= btm.getHeight()){
-
             dstBmp = Bitmap.createBitmap(
                     btm,
                     btm.getWidth()/2 - btm.getHeight()/2,
@@ -49,9 +48,7 @@ public class HelperMethods {
                     btm.getHeight(),
                     btm.getHeight()
             );
-
         }else{
-
             dstBmp = Bitmap.createBitmap(
                     btm,
                     0,
@@ -67,7 +64,6 @@ public class HelperMethods {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         btm.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
         byte[] byteArray = byteArrayOutputStream .toByteArray();
-
         return Base64.encodeToString(byteArray, Base64.DEFAULT);
     }
 

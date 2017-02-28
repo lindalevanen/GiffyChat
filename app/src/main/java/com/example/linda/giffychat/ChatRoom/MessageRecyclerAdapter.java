@@ -76,8 +76,7 @@ public class MessageRecyclerAdapter extends FirebaseRecyclerAdapter<ChatMessage,
     }
 
     /**
-     * A possible solution to outOfMemoryError.
-     * TODO: search for a way to release the memory when destroying chat room activity.
+     * A possible solution to outOfMemoryError (not really). Fixed memoryerror by loading gifs on touch.
      * @param holder
      */
 

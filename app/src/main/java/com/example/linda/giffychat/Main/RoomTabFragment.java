@@ -43,7 +43,7 @@ import static com.example.linda.giffychat.R.layout.room;
 public class RoomTabFragment extends Fragment {
 
     private static final String ARG_SECTION_NUMBER = "section_number";
-    private static final String TAG = "RoomTabFragment";
+    private static final String TAG = RoomTabFragment.class.getSimpleName();
 
     private View rootView;
     private RoomTabFragment.onRoomOpenListener mListener;

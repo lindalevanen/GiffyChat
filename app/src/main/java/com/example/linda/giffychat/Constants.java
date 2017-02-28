@@ -1,10 +1,10 @@
 package com.example.linda.giffychat;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Created by Linda on 27/02/17.
+ * Contains some global constants. This might not be the best practice in Android but gonna
+ * figure out something better later.
  */
 
 public class Constants {

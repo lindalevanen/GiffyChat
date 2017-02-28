@@ -96,7 +96,6 @@ public class RegisterFragment extends Fragment {
                         EditText email = ((EditText) view.findViewById(R.id.emailInput));
                         EditText password = ((EditText) view.findViewById(R.id.passwordInput));
 
-                        // TODO: siivoo tää
                         if(!task.isSuccessful()) {
                             try {
                                 throw task.getException();
@@ -121,7 +120,6 @@ public class RegisterFragment extends Fragment {
                             }
                         } else {
                             Toast.makeText(getContext(), getString(R.string.register_successful), Toast.LENGTH_SHORT).show();
-                            Log.d(getTag(), "User register successful.");
                             updateUserProfile(mUserName);
                             onSuccessfulRegistration();
                         }

@@ -6,10 +6,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -20,7 +18,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -30,7 +27,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -46,30 +42,19 @@ import com.example.linda.giffychat.FeatureFragments.UserProfileFragment;
 import com.example.linda.giffychat.HelperMethods;
 import com.example.linda.giffychat.Login.StartingActivity;
 import com.example.linda.giffychat.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
-import static android.R.attr.bitmap;
-import static android.R.attr.dial;
-import static android.view.View.GONE;
 import static com.example.linda.giffychat.HelperMethods.hash;
-import static com.example.linda.giffychat.R.id.emailText;
 import static java.lang.System.currentTimeMillis;
-import static junit.runner.Version.id;
 
 /**
  * The activity that's created when the user opens the app when logged in.
@@ -79,7 +64,7 @@ import static junit.runner.Version.id;
 public class MainActivity extends AppCompatActivity
         implements RoomTabFragment.onRoomOpenListener, SearchFragment.onOpenRoomListener, UserProfileFragment.onFinishListener {
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = MainActivity.class.getSimpleName();
     public static final int GALLERY_PHOTO_REQUEST_CODE = 1;
     public static final String favoritePrefsName = "favoritePrefs";
     private SharedPreferences favoritePrefs;
@@ -277,7 +262,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
                 membersLO.removeViewAt(membersLO.getChildCount()-1);
                 if(membersLO.getChildCount() == 1) {
-                    removeMemberButton.setVisibility(GONE);
+                    removeMemberButton.setVisibility(View.GONE);
                 }
             }
         });

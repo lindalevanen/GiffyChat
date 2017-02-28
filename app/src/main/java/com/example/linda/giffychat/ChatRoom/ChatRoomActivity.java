@@ -57,6 +57,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -70,7 +71,7 @@ import static android.R.attr.rotation;
 
 public class ChatRoomActivity extends AppCompatActivity {
 
-    private static final String TAG = "ChatRoomActivity";
+    private static final String TAG = ChatRoomActivity.class.getSimpleName();;
     private final static int CAMERA_RQ = 6969;
     private FirebaseAnalytics mFirebaseAnalytics;
 
@@ -232,7 +233,7 @@ public class ChatRoomActivity extends AppCompatActivity {
                             .setValue(new ChatMessage(message,
                                     currentUser.getDisplayName(),
                                     currentUser.getUid(),
-                                    false, 0)
+                                    false, 0, null)
                             );
 
                     chatMessageInput.setText("");
@@ -589,6 +590,39 @@ public class ChatRoomActivity extends AppCompatActivity {
             Exception e = (Exception) data.getSerializableExtra(MaterialCamera.ERROR_EXTRA);
             e.printStackTrace();
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Runtime.getRuntime().gc();
+        deleteCache(this);
+    }
+
+    public static void deleteCache(Context context) {
+        try {
+            File dir = context.getCacheDir();
+            deleteDir(dir);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+            return dir.delete();
+        } else if(dir!= null && dir.isFile()) {
+            return dir.delete();
+        } else {
+            return false;
         }
     }
 }
