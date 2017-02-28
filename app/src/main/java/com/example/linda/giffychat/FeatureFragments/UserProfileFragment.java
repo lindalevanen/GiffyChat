@@ -98,7 +98,7 @@ public class UserProfileFragment extends Fragment {
     private void showPasswordChangePrompt() {
         new AlertDialog.Builder(getContext())
                 .setTitle("Password reset")
-                .setMessage("Do you want a password reset email to be sent for you?")
+                .setMessage("Do you want a password reset email to be sent to you?")
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         changePassword();
@@ -138,11 +138,11 @@ public class UserProfileFragment extends Fragment {
         String[] colors = getResources().getStringArray(R.array.colors);
         LinearLayout colorLO = (LinearLayout) rootView.findViewById(R.id.colorOptions);
 
-        View resetColor = makeNewColor("#ffffff");
-        GradientDrawable border = new GradientDrawable();
-        border.setColor(0xFFFFFFFF); //white background
-        border.setStroke(1, 0xFF000000); //black border with full opacity
-        resetColor.setBackground(border);
+        View resetColor = makeNewColor("#FAFAFA");
+        GradientDrawable whiteBG = new GradientDrawable();
+        whiteBG.setColor(0xFFFAFAFA); // material white
+        whiteBG.setStroke(1, 0xFF000000); //black border with full opacity
+        resetColor.setBackground(whiteBG);
         colorLO.addView(resetColor);
 
         for(String color : colors) {
@@ -178,7 +178,7 @@ public class UserProfileFragment extends Fragment {
         return newColor;
     }
 
-    public void updateUserColor(String color) {
+    private void updateUserColor(String color) {
         String userid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
         DatabaseReference chatRoomRef = ref.child("userData");
@@ -210,9 +210,6 @@ public class UserProfileFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        if(currentColor != null) {
-            updateUserColor(currentColor);
-        }
         mListener = null;
     }
 

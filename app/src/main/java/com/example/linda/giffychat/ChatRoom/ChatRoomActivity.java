@@ -452,11 +452,11 @@ public class ChatRoomActivity extends AppCompatActivity {
         if(!favoritePrefs.contains(mRoomID)) {
             // Set as favorite
             editor.putBoolean(mRoomID, true);
-            Toast.makeText(this, "Added to favorites!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Added to favorites.", Toast.LENGTH_SHORT).show();
         } else {
             // Delete from favorites
             editor.remove(mRoomID);
-            Toast.makeText(this, "Removed from favorites!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Removed from favorites.", Toast.LENGTH_SHORT).show();
         }
         editor.apply();
     }
@@ -538,12 +538,10 @@ public class ChatRoomActivity extends AppCompatActivity {
                 return true;
             case R.id.add_favorite:
                 toggleFavorite();
-                Toast.makeText(this, "Added to Favorites!", Toast.LENGTH_SHORT).show();
                 invalidateOptionsMenu();
                 return true;
             case R.id.remove_favorite:
                 toggleFavorite();
-                Toast.makeText(this, "Removed from Favorites", Toast.LENGTH_SHORT).show();
                 invalidateOptionsMenu();
                 return true;
             case R.id.addMember:
@@ -578,7 +576,6 @@ public class ChatRoomActivity extends AppCompatActivity {
                         String base64 = HelperMethods.getBase64FromBitmap(newLogo);
                         sendNewLogoToServer(base64);
                     }
-
                     break;
                 default:
                     Log.d(TAG, "This requestcode is not handled: "+ requestCode);

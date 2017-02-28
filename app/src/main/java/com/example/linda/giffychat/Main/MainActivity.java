@@ -147,6 +147,7 @@ public class MainActivity extends AppCompatActivity
         UserProfileFragment profileFrag = (UserProfileFragment) manager.findFragmentById(R.id.profile_fragment);
         if(profileFrag != null) {
             trans.remove(profileFrag).commit();
+            manager.popBackStack();
         }
     }
 
@@ -160,6 +161,7 @@ public class MainActivity extends AppCompatActivity
         SearchFragment searchFrag = (SearchFragment) manager.findFragmentById(R.id.search_fragment);
         if(searchFrag != null) {
             trans.remove(searchFrag).commit();
+            manager.popBackStack();
         }
     }
 
