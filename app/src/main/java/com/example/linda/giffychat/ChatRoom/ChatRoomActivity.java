@@ -573,9 +573,7 @@ public class ChatRoomActivity extends AppCompatActivity {
                     startVideoConverter(data);
                     break;
                 case MainActivity.GALLERY_PHOTO_REQUEST_CODE:
-                    //TODO: add logo to room atm in
                     Bitmap newLogo = changeCurrentRoomLogo(data.getData());
-                    //TODO: change (.child("base64RoomImage)) to currently obtained new value
                     if(newLogo != null) {
                         String base64 = HelperMethods.getBase64FromBitmap(newLogo);
                         sendNewLogoToServer(base64);

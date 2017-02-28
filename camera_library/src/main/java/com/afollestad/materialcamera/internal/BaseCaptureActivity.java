@@ -20,7 +20,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
-import android.view.Display;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -79,6 +78,8 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     protected final void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt("camera_position", mCameraPosition);
+        outState.putInt("camera_orientation", mCaptureOrientation);
+        outState.putInt("camera_rotation", mCaptureRotation);
         outState.putBoolean("requesting_permission", mRequestingPermission);
         outState.putLong("recording_start", mRecordingStart);
         outState.putLong("recording_end", mRecordingEnd);
@@ -134,6 +135,8 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
             mLengthLimit = getIntent().getLongExtra(CameraIntentKey.LENGTH_LIMIT, -1);
         } else {
             mCameraPosition = savedInstanceState.getInt("camera_position", -1);
+            mCaptureRotation = savedInstanceState.getInt("camera_rotation", 0);
+            mCaptureOrientation = savedInstanceState.getInt("camera_orientation", 0);
             mRequestingPermission = savedInstanceState.getBoolean("requesting_permission", false);
             mRecordingStart = savedInstanceState.getLong("recording_start", -1);
             mRecordingEnd = savedInstanceState.getLong("recording_end", -1);
@@ -381,7 +384,6 @@ public abstract class BaseCaptureActivity extends AppCompatActivity implements B
     @Override
     protected final void onActivityResult(int requestCode, int resultCode, Intent data) {
         data.putExtra("orientation", mCameraPosition);
-        System.out.println("when is this even called");
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PERMISSION_RC) showInitialRecorder();
     }
