@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final int GALLERY_PHOTO_REQUEST_CODE = 1;
     public static final String favoritePrefsName = "favoritePrefs";
+    public static final String booleanPrefsName = "booleanPrefs";
     private SharedPreferences favoritePrefs;
 
     private RoomTabAdapter mTabAdapter;
@@ -483,6 +484,9 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onPageScrollStateChanged(int state) {}
         });
+
+        //Let's set the default tab as Favorites
+        mViewPager.setCurrentItem(1);
     }
 
     private void setTabListeners(RelativeLayout tab) {

@@ -36,7 +36,6 @@ import java.util.Map;
 
 import static com.example.linda.giffychat.R.layout.list_room;
 
-
 public class RoomTabFragment extends Fragment {
 
     private static final String ARG_SECTION_NUMBER = "section_number";
@@ -48,10 +47,12 @@ public class RoomTabFragment extends Fragment {
 
     private ListView roomList;
     private ProgressBar progressBar;
+    private TextView noContactsText;
     private FirebaseListAdapter<Room> globalListAdapter;
     private ArrayAdapter<Room> favoriteListAdapter;
     private FirebaseListAdapter<One2OneChat> contactListAdapter;
     private SharedPreferences favoritePrefs;
+    private SharedPreferences booleanPrefs;
 
     public RoomTabFragment() {}
 
@@ -120,10 +121,14 @@ public class RoomTabFragment extends Fragment {
         });
     }
 
+    /**
+     * Inits the global rooms tab.
+     */
+
     private void initGlobalRooms() {
 
         globalListAdapter = new FirebaseListAdapter<Room>(getActivity(), Room.class,
-                list_room, FirebaseDatabase.getInstance().getReference().child("chatRooms")) {
+                R.layout.list_room, FirebaseDatabase.getInstance().getReference().child("chatRooms")) {
             @Override
             protected void populateView(View v, final Room room, int position) {
                 progressBar.setVisibility(View.INVISIBLE);
@@ -150,6 +155,10 @@ public class RoomTabFragment extends Fragment {
         roomList.setAdapter(globalListAdapter);
     }
 
+    /**
+     * Inits the favorite rooms tab.
+     */
+
     private void initfavRooms() {
         TextView noFavsText = (TextView) rootView.findViewById(R.id.noFavsText);
         noFavsText.setVisibility(View.GONE);
@@ -170,6 +179,12 @@ public class RoomTabFragment extends Fragment {
             getFavRooms(favoriteRoomIds);
         }
     }
+
+    /**
+     * Gets favorite rooms from chatRooms reference by iterating them and checking if the id is of a favorite room.
+     * Might change this solution, not efficient enough when there are a lot of rooms.
+     * @param ids
+     */
 
     public void getFavRooms(final ArrayList<String> ids) {
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference("chatRooms");
@@ -195,12 +210,14 @@ public class RoomTabFragment extends Fragment {
     }
 
     /**
-     * Initializes the contacts tab
+     * Initializes the contacts tab.
      */
 
     private void initContacts() {
-        final TextView noContactsText = (TextView) rootView.findViewById(R.id.noContactsText);
+        noContactsText = (TextView) rootView.findViewById(R.id.noContactsText);
         noContactsText.setVisibility(View.GONE);
+
+        checkEmptyContacts();
 
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         final String path = "userData/" + user.getUid() + "/one2oneChats";
@@ -210,6 +227,7 @@ public class RoomTabFragment extends Fragment {
             @Override
             protected void populateView(View v, final One2OneChat chat, int position) {
                 progressBar.setVisibility(View.INVISIBLE);
+                noContactsText.setVisibility(View.INVISIBLE);
                 TextView contactText = (TextView) v.findViewById(R.id.contactText);
 
                 if(chat.getMember1().getUuid().equals(user.getUid())) {
@@ -223,9 +241,8 @@ public class RoomTabFragment extends Fragment {
         contactListAdapter.registerDataSetObserver(new DataSetObserver() {
             @Override
             public void onChanged() {
-                System.out.println("data changed.");
                 if(contactListAdapter.getCount() == 0) {
-                    noContactsText.setVisibility(View.GONE);
+                    noContactsText.setVisibility(View.VISIBLE);
                 }
                 super.onChanged();
             }
@@ -233,6 +250,32 @@ public class RoomTabFragment extends Fragment {
 
         roomList.setAdapter(contactListAdapter);
     }
+
+    /**
+     * A little gum solution, there might be a better way to know whether or not the user has contacts.
+     * This method hides the progressBar and shows a "no contacts"-textview if the user doesn't have contacts.
+     */
+
+    private void checkEmptyContacts() {
+        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        DatabaseReference rootRef = FirebaseDatabase.getInstance()
+                .getReference("userData/" + user.getUid());
+        rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                if(!snapshot.hasChild("one2oneChats")) {
+                    progressBar.setVisibility(View.GONE);
+                    noContactsText.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.d(TAG, databaseError.getMessage());
+            }
+        });
+    }
+
 
     private void openRoomIfMember(Room room) {
         if(mListener != null) {
@@ -267,7 +310,7 @@ public class RoomTabFragment extends Fragment {
 
     @Override
     public void onResume() {
-        if(this.getArguments().getInt(ARG_SECTION_NUMBER) == 2) {
+        if(tabNo == 2) {
             displayRooms();
         }
         super.onResume();
