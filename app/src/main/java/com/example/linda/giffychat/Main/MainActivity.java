@@ -33,8 +33,11 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.linda.giffychat.ChatRoom.ChatActivity;
+import com.example.linda.giffychat.ChatRoom.ChatOne2OneActivity;
 import com.example.linda.giffychat.ChatRoom.ChatRoomActivity;
 import com.example.linda.giffychat.Constants;
+import com.example.linda.giffychat.Entity.One2OneChat;
 import com.example.linda.giffychat.Entity.Room;
 import com.example.linda.giffychat.ExceptionHandler;
 import com.example.linda.giffychat.FeatureFragments.SearchFragment;
@@ -416,6 +419,19 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    @Override
+    public void openOne2OneChat(One2OneChat chat) {
+        try {
+            Intent intent = new Intent(getApplicationContext(), ChatOne2OneActivity.class);
+            Bundle b = new Bundle();
+            b.putString("chatID", chat.getId());
+            intent.putExtras(b);
+            startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private String generateID() {
         // We'll use the hash method so the id could be shorter.
         return hash(Long.toString(currentTimeMillis()));
@@ -433,6 +449,7 @@ public class MainActivity extends AppCompatActivity
 
         setTabListeners(((RelativeLayout) findViewById(R.id.tab0base)));
         setTabListeners(((RelativeLayout) findViewById(R.id.tab1base)));
+        setTabListeners(((RelativeLayout) findViewById(R.id.tab2base)));
 
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -442,8 +459,10 @@ public class MainActivity extends AppCompatActivity
             public void onPageSelected(int position) {
                 TextView tab0 = ((TextView) findViewById(R.id.tab0));
                 TextView tab1 = ((TextView) findViewById(R.id.tab1));
+                TextView tab2 = ((TextView) findViewById(R.id.tab2));
                 tab0.setBackgroundResource(0);
                 tab1.setBackgroundResource(0);
+                tab2.setBackgroundResource(0);
 
                 switch (position) {
                     case 0:
@@ -451,6 +470,9 @@ public class MainActivity extends AppCompatActivity
                         break;
                     case 1:
                         tab1.setBackgroundResource(R.drawable.text_border);
+                        break;
+                    case 2:
+                        tab2.setBackgroundResource(R.drawable.text_border);
                         break;
                     default:
                         Log.d(TAG, "More tabs than initialized!!!");
@@ -505,9 +527,6 @@ public class MainActivity extends AppCompatActivity
             if(resultCode == RESULT_OK){
                 Uri selectedImage = data.getData();
 
-                //roomImage.setAdjustViewBounds(true);
-                //roomImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
-
                 try {
                     Bitmap bmp = HelperMethods.getBitmapFromUri(selectedImage, this);
                     Bitmap compressedBtm = HelperMethods.getResizedBitmap(bmp, 200);
@@ -521,14 +540,5 @@ public class MainActivity extends AppCompatActivity
 
             }
         }
-    }
-
-    private Bitmap getBitmapFromUri(Uri uri) throws IOException {
-        ParcelFileDescriptor parcelFileDescriptor =
-                getContentResolver().openFileDescriptor(uri, "r");
-        FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-        Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
-        parcelFileDescriptor.close();
-        return image;
     }
 }

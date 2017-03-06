@@ -3,12 +3,8 @@ package com.example.linda.giffychat.Main;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.support.annotation.NonNull;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,8 +18,6 @@ import com.example.linda.giffychat.HelperMethods;
 import com.example.linda.giffychat.R;
 
 import java.util.ArrayList;
-
-import static com.example.linda.giffychat.HelperMethods.getBitmapFromBase64;
 
 /**
  * A very simple list adapter for the items in "Favorites" tab.
@@ -46,7 +40,7 @@ public class FavoriteListAdapter extends ArrayAdapter<Room> {
         Room room = getItem(position);
 
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.room, parent, false);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_room, parent, false);
         }
         TextView titleView = (TextView) convertView.findViewById(R.id.roomTitle);
         ImageView iconView = (ImageView) convertView.findViewById(R.id.roomIcon);

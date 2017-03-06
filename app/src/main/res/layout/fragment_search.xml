@@ -8,6 +8,8 @@
     android:id="@+id/searchBaseLO"
     tools:context="com.example.linda.giffychat.FeatureFragments.SearchFragment">
 
+    <!-- Might just use message_edit later -->
+    <!-- They have too many differences atm to just easily include it instead of this LinearLayout -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -39,7 +41,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="10dp">
-        <include layout="@layout/room" />
+       <include layout="@layout/list_room" />
     </RelativeLayout>
 
 

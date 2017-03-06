@@ -33,14 +33,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
-import static com.example.linda.giffychat.R.id.changePasswordB;
-import static com.example.linda.giffychat.R.id.messageBase;
-import static com.example.linda.giffychat.R.layout.room;
-import static com.facebook.login.widget.ProfilePictureView.TAG;
-import static junit.runner.Version.id;
-
-
 public class UserProfileFragment extends Fragment {
 
     private onFinishListener mListener;
@@ -152,7 +144,7 @@ public class UserProfileFragment extends Fragment {
     }
 
     /**
-     * Makes a new color to be option in
+     * Makes a new color to be option in usercolor options.
      * @param colorHex
      * @return
      */

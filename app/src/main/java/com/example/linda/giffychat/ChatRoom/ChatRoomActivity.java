@@ -1,54 +1,44 @@
 package com.example.linda.giffychat.ChatRoom;
 
-import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.database.DataSetObserver;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+import android.icu.text.LocaleDisplayNames;
 import android.net.Uri;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialcamera.MaterialCamera;
 import com.example.linda.giffychat.Entity.ChatMessage;
+import com.example.linda.giffychat.Entity.One2OneChat;
 import com.example.linda.giffychat.Entity.Room;
-import com.example.linda.giffychat.ExceptionHandler;
+import com.example.linda.giffychat.Entity.User;
 import com.example.linda.giffychat.HelperMethods;
 import com.example.linda.giffychat.Main.MainActivity;
 import com.example.linda.giffychat.R;
-import com.example.linda.giffychat.VideoConverter;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -57,84 +47,70 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static android.R.attr.bitmap;
 import static android.R.attr.data;
-import static android.R.attr.rotation;
+import static android.R.id.message;
 
 /**
- * The base activity for a chat room. Contains a toolbar, a RecyclerView for messages and a message-sending field.
+ * A public or private chat room.
  */
 
-public class ChatRoomActivity extends AppCompatActivity {
+public class ChatRoomActivity extends ChatActivity {
 
-    private static final String TAG = ChatRoomActivity.class.getSimpleName();;
-    private final static int CAMERA_RQ = 6969;
-    private FirebaseAnalytics mFirebaseAnalytics;
+    private static final String TAG = ChatRoomActivity.class.getSimpleName();
+    private static final String ref = "chatMessages";
 
-    private String mRoomID;
-    private Room mRoom;
+    public String mRoomID;
+    public Room mRoom;
 
-    private FirebaseRecyclerAdapter adapter;
-    private ProgressBar progBar;
-    private ProgressDialog progDialogUpdate;
-    private SharedPreferences favoritePrefs;
-    private RecyclerView listOfMessages;
-
-    private Toolbar toolbar;
-    private boolean roomHasLogo = false;
+    private String roomLogoBase64;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.content_chat_room);
-
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        progBar = (ProgressBar) findViewById(R.id.chatProgressBar);
-        progDialogUpdate = new ProgressDialog(this);
-
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-
-        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this,
-                ChatRoomActivity.class));
-
+    public void initActivity() {
         Bundle b = getIntent().getExtras();
         if(b != null) {
             mRoomID = b.getString("roomID");
-            if(b.getString("base64icon") != null) {
-                roomHasLogo = true;
-                Bitmap icon = HelperMethods.getBitmapFromBase64(b.getString("base64icon"));
-                RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), icon);
-                dr.setCornerRadius(10f);
-                getSupportActionBar().setLogo(dr);
+            if(mRoomID != null) {
+                roomLogoBase64 = b.getString("base64icon");
+                getRoomData(mRoomID);
+            } else {
+                Log.d(TAG, "ChatRoomActivity created without RoomID! Can't initialize.");
             }
-            getRoomData(mRoomID);
+
         } else {
             Log.d(TAG, "Activity started incorrectly, no extras in intent.");
         }
     }
 
-    private void getRoomData(String roomID) {
+    private void initActionBar() {
+        if(roomLogoBase64 != null) {
+            Bitmap icon = HelperMethods.getBitmapFromBase64(roomLogoBase64);
+            RoundedBitmapDrawable dr = HelperMethods.giveBitmapRoundedCorners(icon, this);
+            getSupportActionBar().setLogo(dr);
+            getSupportActionBar().setTitle("   "+mRoom.getTitle());
+        }
+    }
 
+    /**
+     * Fetches the room's data from the database and then starts the initialization of the chat.
+     * @param roomID the chat room's id
+     */
+
+    private void getRoomData(String roomID) {
         DatabaseReference roomRef =
                 FirebaseDatabase.getInstance().getReference().child("chatRooms").child(roomID);
-
         ValueEventListener roomListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 mRoom = dataSnapshot.getValue(Room.class);
-                initUI();
-                initMessages();
-                hideProgbarIfNoMessages();
+                initUI(ref, mRoomID);
+                initMessages(ref, mRoomID);
+                hideProgbarIfNoMessages(ref, mRoomID);
+                initActionBar();
+                invalidateOptionsMenu();
             }
-
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Log.w(TAG, "loadRoom:onCancelled", databaseError.toException());
@@ -142,124 +118,6 @@ public class ChatRoomActivity extends AppCompatActivity {
             }
         };
         roomRef.addListenerForSingleValueEvent(roomListener);
-    }
-
-    /**
-     * A bit gum solution but I couldn't figure out which method is triggered when no data is received
-     * from messages database and I have to hide the progressbar when this happens.
-     */
-
-    private void hideProgbarIfNoMessages() {
-        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference("chatMessages");
-        rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                if (!snapshot.hasChild(mRoomID)) {
-                    progBar.setVisibility(View.INVISIBLE);
-                }
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.d(TAG, databaseError.getMessage());
-            }
-        });
-    }
-
-    private void initMessages() {
-        listOfMessages = (RecyclerView) findViewById(R.id.chatMessageList);
-
-        adapter = new MessageRecyclerAdapter(ChatMessage.class, R.layout.md_listitem, MessageHolder.class,
-                FirebaseDatabase.getInstance().getReference().child("chatMessages").child(mRoomID),
-                this, progDialogUpdate);
-
-        final LinearLayoutManager manager = new LinearLayoutManager(this);
-        manager.setStackFromEnd(true);
-        listOfMessages.setLayoutManager(manager);
-
-        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-            @Override
-            public void onItemRangeInserted(int positionStart, int itemCount) {
-                super.onItemRangeInserted(positionStart, itemCount);
-
-                if(progBar.getVisibility() == View.VISIBLE) {
-                    progBar.setVisibility(View.INVISIBLE);
-                }
-
-                int friendlyMessageCount = adapter.getItemCount();
-                int lastVisiblePosition =
-                        manager.findLastCompletelyVisibleItemPosition();
-                // If the recycler view is initially being loaded or the
-                // user is at the bottom of the list, scroll to the bottom
-                // of the list to show the newly added message.
-                if (lastVisiblePosition == -1 ||
-                        (positionStart >= (friendlyMessageCount - 1) &&
-                                lastVisiblePosition == (positionStart - 1))) {
-                    listOfMessages.scrollToPosition(positionStart);
-                }
-            }
-        });
-
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(listOfMessages.getContext(),
-                manager.getOrientation());
-        dividerItemDecoration.setDrawable(getResources().getDrawable(R.drawable.divider_drawable, null));
-        listOfMessages.addItemDecoration(dividerItemDecoration);
-
-        listOfMessages.setAdapter(adapter);
-    }
-
-    private void initUI() {
-        if(roomHasLogo) {
-            toolbar.setTitle("   "+mRoom.getTitle());
-        } else {
-            toolbar.setTitle(mRoom.getTitle());
-        }
-
-
-        ((RelativeLayout) findViewById(R.id.sendMessageLO)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                EditText chatMessageInput = (EditText) findViewById(R.id.editMessage);
-                String message = chatMessageInput.getText().toString();
-
-                if(!message.trim().isEmpty()) {
-                    FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
-                    FirebaseDatabase.getInstance()
-                            .getReference()
-                            .child("chatMessages")
-                            .child(mRoomID)
-                            .push()
-                            .setValue(new ChatMessage(message,
-                                    currentUser.getDisplayName(),
-                                    currentUser.getUid(),
-                                    false, 0, null)
-                            );
-
-                    chatMessageInput.setText("");
-                }
-
-
-            }
-        });
-    }
-
-    private void recordGif() {
-        listOfMessages.scrollToPosition(listOfMessages.getAdapter().getItemCount() - 1);
-        if(getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-            try{
-                new MaterialCamera(this)
-                        .countdownSeconds(4.0f)
-                        .showPortraitWarning(false)
-                        .qualityProfile(MaterialCamera.QUALITY_480P)
-                        .start(CAMERA_RQ);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        } else {
-            Toast.makeText(getApplicationContext(), "This device doesn't have a camera! Bummer.", Toast.LENGTH_SHORT).show();
-        }
     }
 
     private void askNewMemberInfo() {
@@ -306,6 +164,11 @@ public class ChatRoomActivity extends AppCompatActivity {
         d.show();
     }
 
+    /**
+     * Adds a new member to this room (if this room is private and it should be if this method is called!)
+     * @param membersEmail the email of the member to be added
+     */
+
     private void addMemberToRoom(final String membersEmail) {
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference("chatRooms").child(mRoomID);
         rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -313,8 +176,8 @@ public class ChatRoomActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot snapshot) {
                 if (snapshot.hasChild("members")) {
                     DatabaseReference db = FirebaseDatabase.getInstance().getReference("chatRooms")
-                        .child(mRoom.getId())
-                        .child("members");
+                            .child(mRoom.getId())
+                            .child("members");
                     String count = Long.toString(snapshot.child("members").getChildrenCount());
                     db.child(count).setValue(membersEmail);
                     Toast.makeText(getApplicationContext(),
@@ -331,6 +194,11 @@ public class ChatRoomActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Shows a dialog of the members in this private(!) room.
+     * @param memberEmails the emails of the members in this room
+     */
+
     private void showMembers(ArrayList<String> memberEmails) {
         LayoutInflater li = LayoutInflater.from(this);
         final View dialogLO = li.inflate(R.layout.dialog_room_members, null);
@@ -341,16 +209,7 @@ public class ChatRoomActivity extends AppCompatActivity {
         LinearLayout membersLO = (LinearLayout) dialogLO.findViewById(R.id.memberList);
 
         for(String member : memberEmails) {
-            TextView emailView = new TextView(this);
-            emailView.setText(member);
-            emailView.setTextColor(Color.parseColor("#000000"));
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-            );
-            int emailMargin = HelperMethods.dpToPx(this, 10);
-            params.setMargins(0, 0, 0, emailMargin);
-            membersLO.addView(emailView, params);
+            membersLO.addView(newMemberEmail(member));
         }
 
         // Creates the dialog
@@ -384,6 +243,31 @@ public class ChatRoomActivity extends AppCompatActivity {
         });
         d.show();
     }
+
+    /**
+     * Creates a new TextView to be added in the room's members dialog.
+     * @param member the member (email) to be displayed.
+     * @return a new TextView that contains the member's email
+     */
+
+    private TextView newMemberEmail(String member) {
+        TextView emailView = new TextView(this);
+        emailView.setText(member);
+        emailView.setTextColor(Color.parseColor("#000000"));
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        int emailMargin = HelperMethods.dpToPx(this, 10);
+        params.setMargins(0, 0, 0, emailMargin);
+        emailView.setLayoutParams(params);
+        return emailView;
+    }
+
+    /**
+     * Shows the room's id in a dialog.
+     * The id can be copied to clipboard by pressing the copy-button next to the id.
+     */
 
     private void showRoomID() {
         LayoutInflater li = LayoutInflater.from(this);
@@ -423,6 +307,11 @@ public class ChatRoomActivity extends AppCompatActivity {
         d.show();
     }
 
+    /**
+     * Gets this room's members from Firebase db.
+     * (if this room is private and it should be if this method is called!)
+     */
+
     public void getRoomMembers() {
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference("chatRooms").child(mRoomID);
         rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -446,6 +335,10 @@ public class ChatRoomActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Toggles the room's favorite state.
+     */
+
     private void toggleFavorite() {
         favoritePrefs = this.getSharedPreferences(MainActivity.favoritePrefsName, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = favoritePrefs.edit();
@@ -461,27 +354,7 @@ public class ChatRoomActivity extends AppCompatActivity {
         editor.apply();
     }
 
-    private void changeRoomLogo() {
-        Intent pickPhoto = new Intent(Intent.ACTION_PICK,
-                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(pickPhoto, MainActivity.GALLERY_PHOTO_REQUEST_CODE);
-    }
-
-    private void startVideoConverter(Intent data) {
-        Bundle extras = data.getExtras();
-        int cameraPosition = extras.getInt("position");
-        int cameraOrientation = extras.getInt("orientation");
-        int cameraRotation = extras.getInt("rotation");
-        VideoConverter vc = new VideoConverter(this, data.getDataString(), progDialogUpdate,
-                mRoomID, 4, cameraPosition, cameraOrientation, cameraRotation);
-        vc.execute();
-    }
-
     private Bitmap changeCurrentRoomLogo(Uri imageData) {
-
-        //roomImage.setAdjustViewBounds(true);
-        //roomImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
-
         try {
             Bitmap bmp = HelperMethods.getBitmapFromUri(imageData, this);
             Bitmap compressedBtm = HelperMethods.getResizedBitmap(bmp, 200);
@@ -504,17 +377,185 @@ public class ChatRoomActivity extends AppCompatActivity {
                 .setValue(base64);
     }
 
+    /**
+     * Makes a request for the user to pick a new room logo from user's gallery.
+     */
+
+    private void changeRoomLogo() {
+        Intent pickPhoto = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(pickPhoto, MainActivity.GALLERY_PHOTO_REQUEST_CODE);
+    }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        if(mRoom.getMembers() == null) {
-            inflater.inflate(R.menu.chat_public_actionbar_menu, menu);
-        } else {
-            inflater.inflate(R.menu.chat_private_actionbar_menu, menu);
+    public void onSendMessagePressed(User user) {
+        openChatIfItExists(user);
+    }
+
+    /**
+     * Checks whether there's a chat for current user and the user in param and either opens the chat
+     * with getChatDataAndOpenRoom-method or creates a new one with createOne2OneChat-method.
+     * @param user the user that the chat is to be created with
+     */
+
+    private void openChatIfItExists(final User user) {
+        final FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        final String chatID1 = currentUser.getUid() + user.getUuid();
+        final String chatID2 = user.getUuid() + currentUser.getUid();
+        DatabaseReference roomRef =
+                FirebaseDatabase.getInstance().getReference().child("one2oneChats");
+        ValueEventListener roomListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    if (dataSnapshot.hasChild(chatID1)) {
+                        getChatDataAndOpenRoom(chatID1);
+                    } else if (dataSnapshot.hasChild(chatID2)) {
+                        getChatDataAndOpenRoom(chatID2);
+                    } else {
+                        // create a new room
+                        User cUser = new User(currentUser.getEmail(), currentUser.getDisplayName(), currentUser.getUid());
+                        One2OneChat newChat = createOne2OneChat(chatID1, cUser, user);
+                        openOne2OneChat(newChat);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "loadRoom:onCancelled", databaseError.toException());
+                Toast.makeText(getApplicationContext(), "Room loading cancelled.", Toast.LENGTH_SHORT).show();
+            }
+        };
+        roomRef.addListenerForSingleValueEvent(roomListener);
+    }
+
+    /**
+     * When we know there is a chat with id chatid in database, this method fetches the chat data
+     * and opens the room by calling the method openOne2OneChat(One2OneChat)
+     * @param chatid the id of the existing chat room
+     */
+
+    private void getChatDataAndOpenRoom(final String chatid) {
+        DatabaseReference roomRef =
+                FirebaseDatabase.getInstance().getReference().child("one2oneChats").child(chatid);
+        ValueEventListener roomListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    One2OneChat newChat = dataSnapshot.getValue(One2OneChat.class);
+                    openOne2OneChat(newChat);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "loadRoom:onCancelled", databaseError.toException());
+                Toast.makeText(getApplicationContext(), "Room loading cancelled.", Toast.LENGTH_SHORT).show();
+            }
+        };
+        roomRef.addListenerForSingleValueEvent(roomListener);
+    }
+
+
+    private One2OneChat createOne2OneChat(String chatID, User currentUser, User user2) {
+        try {
+            // Creates a new chat to db
+            //DatabaseReference roomRef =
+            //        FirebaseDatabase.getInstance().getReference().child("one2oneChats").child(chatID);
+            One2OneChat newChat = new One2OneChat(chatID, currentUser, user2);
+            //roomRef.setValue(newChat);
+
+            // Sets the new chat id for the users to be easily later fetched
+            sendNewChatToUser(newChat, currentUser.getUuid());
+            sendNewChatToUser(newChat, user2.getUuid());
+
+            return newChat;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private void sendNewChatToUser(final One2OneChat newChat, final String userID) {
+        DatabaseReference userDataRef =
+                FirebaseDatabase.getInstance().getReference().child("userData").child(userID);
+
+        /* Get the data inside userDataRef, if there's no "one2oneChats" child, set new value there with the new chat */
+
+        ValueEventListener roomListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    DatabaseReference db = FirebaseDatabase.getInstance().getReference("userData")
+                            .child(userID)
+                            .child("one2oneChats");
+                    db.child(newChat.getId()).setValue(newChat);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "loadRoom:onCancelled", databaseError.toException());
+                Toast.makeText(getApplicationContext(), "Room loading cancelled.", Toast.LENGTH_SHORT).show();
+            }
+        };
+        userDataRef.addListenerForSingleValueEvent(roomListener);
+    }
+
+    private void openOne2OneChat(One2OneChat chat) {
+        try {
+            Intent intent = new Intent(getApplicationContext(), ChatOne2OneActivity.class);
+            Bundle b = new Bundle();
+            b.putString("chatID", chat.getId());
+            intent.putExtras(b);
+            startActivity(intent);
+            finish();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onMessageLongClick(ChatMessage message) {
+        try {
+            if(message.getUser() != null) {
+                showUserInfo(message.getUser());
+            } else {
+                Toast.makeText(this, "Sorry this old message doesn't support user info.", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        return true;
+    }
+
+    private void showUserInfo(User user) {
+        try {
+            FragmentManager manager = getSupportFragmentManager();
+            FragmentTransaction trans = manager.beginTransaction();
+            // pop_exit doesn't seem to work here since the animation doesn't appear on back button pressed...
+            trans.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit);
+
+            // Remove previous userInfoFragment if there is one
+            Fragment possibleFrag = manager.findFragmentByTag("userInfoFrag");
+            if(possibleFrag != null) {
+                trans.remove(possibleFrag);
+                manager.popBackStack();
+            }
+
+            UserInfoFragment userInfoFrag = UserInfoFragment.newInstance(user);
+            trans.replace(R.id.userInfoPanel, userInfoFrag, "userInfoFrag");
+            trans.addToBackStack(null);
+            trans.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -531,10 +572,23 @@ public class ChatRoomActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if(mRoom != null) {
+            MenuInflater inflater = getMenuInflater();
+            if(mRoom.getMembers() == null) {
+                inflater.inflate(R.menu.chat_public_actionbar_menu, menu);
+            } else {
+                inflater.inflate(R.menu.chat_private_actionbar_menu, menu);
+            }
+        }
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.recordGif:
-                recordGif();
+                recordGif(4.0f);
                 return true;
             case R.id.add_favorite:
                 toggleFavorite();
@@ -568,7 +622,7 @@ public class ChatRoomActivity extends AppCompatActivity {
         if(resultCode == RESULT_OK) {
             switch (requestCode) {
                 case CAMERA_RQ:
-                    startVideoConverter(data);
+                    startVideoConverter(data, ref, mRoomID);
                     break;
                 case MainActivity.GALLERY_PHOTO_REQUEST_CODE:
                     Bitmap newLogo = changeCurrentRoomLogo(data.getData());
@@ -585,39 +639,6 @@ public class ChatRoomActivity extends AppCompatActivity {
             Exception e = (Exception) data.getSerializableExtra(MaterialCamera.ERROR_EXTRA);
             e.printStackTrace();
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Runtime.getRuntime().gc();
-        deleteCache(this);
-    }
-
-    public static void deleteCache(Context context) {
-        try {
-            File dir = context.getCacheDir();
-            deleteDir(dir);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static boolean deleteDir(File dir) {
-        if (dir != null && dir.isDirectory()) {
-            String[] children = dir.list();
-            for (int i = 0; i < children.length; i++) {
-                boolean success = deleteDir(new File(dir, children[i]));
-                if (!success) {
-                    return false;
-                }
-            }
-            return dir.delete();
-        } else if(dir!= null && dir.isFile()) {
-            return dir.delete();
-        } else {
-            return false;
         }
     }
 }

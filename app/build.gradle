@@ -28,6 +28,7 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+    compile project(':camera_library')
     compile 'com.android.support:multidex:1.0.1'
     compile 'com.android.support:appcompat-v7:25.1.1'
     compile 'com.google.firebase:firebase-core:10.2.0'
@@ -39,17 +40,13 @@ dependencies {
     compile 'com.android.support:design:25.1.1'
     compile 'com.firebaseui:firebase-ui:0.6.0'
     compile 'com.github.bumptech.glide:glide:3.7.0'
-    /*compile 'com.afollestad:material-camera:0.4.4'*/
-    //compile fileTree(dir: 'libs', include: ['material-camera-master-own'])
-    /*compile project(":libs:material-camera")*/
-    /*compile project(":libs:material")*/
-    /*compile fileTree(dir: 'libs', include: ['material'])*/
     compile 'commons-codec:commons-codec:1.10'
+    compile 'com.sothree.slidinguppanel:library:3.3.1'
     compile 'com.github.wseemann:FFmpegMediaMetadataRetriever:1.0.14'
     compile 'com.google.firebase:firebase-crash:10.2.0'
     testCompile 'junit:junit:4.12'
-    compile project(':camera_library')
 }
+
 
 
 

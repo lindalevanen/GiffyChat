@@ -12,6 +12,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.gifencoder.AnimatedGifEncoder;
 import com.example.linda.giffychat.Entity.ChatMessage;
+import com.example.linda.giffychat.Entity.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -45,6 +46,7 @@ public class VideoConverter extends AsyncTask {
     private int cameraPosition;
     private int cameraOrientation;
     private int cameraRotation;
+    private String ref;
     private String roomID;
     private ProgressDialog progDialogConvert;
     private ProgressDialog progDialogUpdate;
@@ -58,18 +60,20 @@ public class VideoConverter extends AsyncTask {
      * @param context The activity's context in which this class is used
      * @param path The path to the video to be converted to gif
      * @param progDialogUpdate A Progressdialog that is to be dismissed after the chat has updated.
-     * @param roomID The room's id where the gif is to be displayed
+     * @param ref The reference to Firebase db where the gif is to be put
+     * @param roomID The list_room's id where the gif is to be displayed
      * @param duration The duration of the gif
      * @param cameraPosition 0 = unknown, 1 = front camera, 2 = back camera
      * @param cameraOrientation 0 = unknown, 1 = portrait, 2 = landscape
      * @param cameraRotation 0 = unknown, 1 = 90 degrees cw, 2 = 180 degrees cw, 3 = 90 degrees ccw
      */
 
-    public VideoConverter(Context context, String path, ProgressDialog progDialogUpdate, String roomID,
+    public VideoConverter(Context context, String path, ProgressDialog progDialogUpdate, String ref, String roomID,
                           int duration, int cameraPosition, int cameraOrientation, int cameraRotation) {
         this.context = context;
         this.path = path;
         this.roomID = roomID;
+        this.ref = ref;
         this.duration = duration;
         this.progDialogUpdate = progDialogUpdate;
         this.cameraPosition = cameraPosition;
@@ -163,17 +167,15 @@ public class VideoConverter extends AsyncTask {
     private void sendPathToDB(Uri url) {
         try {
             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
+            User user = new User(currentUser.getEmail(), currentUser.getDisplayName(), currentUser.getUid());
             FirebaseDatabase.getInstance()
                     .getReference()
                     .child("chatMessages")
                     .child(roomID)
                     .push()
                     .setValue(new ChatMessage(url.toString(),
-                            currentUser.getDisplayName(),
-                            currentUser.getUid(),
-                            true, cameraOrientation,
-                            thumbnailbase64)
+                            user.getUserName(), user.getUuid(), user,
+                            true, cameraOrientation, thumbnailbase64)
                     );
         } catch (Exception e) {
             e.printStackTrace();

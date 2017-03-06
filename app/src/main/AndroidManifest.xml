@@ -15,8 +15,8 @@
         android:supportsRtl="true">
         <activity
             android:name=".Login.StartingActivity"
-            android:theme="@style/StartingTheme"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:theme="@style/StartingTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,12 +25,15 @@
         </activity>
         <activity
             android:name=".Main.MainActivity"
-            android:theme="@style/MainTheme"
-            android:screenOrientation="portrait"/>
-        <activity
-            android:name=".ChatRoom.ChatRoomActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/MainTheme"/>
+            android:theme="@style/MainTheme" />
+        <activity android:name=".ChatRoom.ChatRoomActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/MainTheme" />
+        <activity android:name=".ChatRoom.ChatOne2OneActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/MainTheme" />
+
         <activity
             android:name="com.afollestad.materialcamera.CaptureActivity"
             android:theme="@style/MaterialCamera.CaptureActivity" />

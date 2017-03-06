@@ -1,0 +1,33 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:clickable="true"
+    android:background="@drawable/shadow_bottom_border"
+    tools:context="com.example.linda.giffychat.ChatRoom.UserInfoFragment">
+
+    <TextView android:id="@+id/userName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="20dp"
+        android:paddingBottom="5dp"
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
+        android:text="Coco"/>
+
+    <ImageView android:id="@+id/messageB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:paddingTop="20dp"
+        android:paddingEnd="20dp"
+        android:paddingStart="20dp"
+        android:paddingBottom="13dp"
+        android:background="?attr/selectableItemBackground"
+        android:layout_marginBottom="7dp"
+        android:src="@drawable/ic_comment"/>
+
+</RelativeLayout>

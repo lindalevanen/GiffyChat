@@ -24,10 +24,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import static com.example.linda.giffychat.R.layout.room;
 
 /**
- * Creates a view for room searching and searches a room by user input room id.
+ * Creates a view for list_room searching and searches a list_room by user input list_room id.
  */
 
 public class SearchFragment extends Fragment {
@@ -84,7 +83,7 @@ public class SearchFragment extends Fragment {
                 if(mFoundRoom != null) {
                     openRoom(mFoundRoom);
                 } else {
-                    Log.d(TAG, "The roomTitle-TextView shouldn't be visible when the room hasn't been found.");
+                    Log.d(TAG, "The roomTitle-TextView shouldn't be visible when the list_room hasn't been found.");
                 }
 
             }
@@ -115,7 +114,7 @@ public class SearchFragment extends Fragment {
                         return;
                     }
                 }
-                Toast.makeText(getContext(), "No room found with that ID.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "No list_room found with that ID.", Toast.LENGTH_SHORT).show();
             }
 
             @Override

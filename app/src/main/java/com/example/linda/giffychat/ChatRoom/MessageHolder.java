@@ -24,7 +24,9 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.example.linda.giffychat.Constants;
 import com.example.linda.giffychat.Entity.ChatMessage;
+import com.example.linda.giffychat.Entity.User;
 import com.example.linda.giffychat.HelperMethods;
+import com.example.linda.giffychat.Main.MainActivity;
 import com.example.linda.giffychat.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -45,6 +47,7 @@ import java.io.IOException;
 
 import static android.R.attr.cacheColorHint;
 import static android.R.attr.path;
+import static android.R.id.message;
 import static com.facebook.FacebookSdk.getApplicationContext;
 
 /**
@@ -69,6 +72,7 @@ public class MessageHolder extends RecyclerView.ViewHolder {
 
     private RelativeLayout messageBase;
 
+    private onMessageLongClickListener mListener;
     public int viewType;
     private Context context;
 
@@ -89,11 +93,16 @@ public class MessageHolder extends RecyclerView.ViewHolder {
                 break;
         }
 
+        this.mListener = (onMessageLongClickListener) context;
         this.messageTime = (TextView) itemView.findViewById(R.id.message_time);
         this.messageUser = (TextView) itemView.findViewById(R.id.message_user);
         this.progressBarGif = (ProgressBar) itemView.findViewById(R.id.progBarGif);
         this.playButtonGif = (ImageView) itemView.findViewById(R.id.playButtonGif);
         this.messageBase = (RelativeLayout) itemView.findViewById(R.id.messageBase);
+    }
+
+    public interface onMessageLongClickListener {
+        void onMessageLongClick(ChatMessage message);
     }
 
     public void populateView(final ChatMessage message, final ProgressDialog progDialogUpdate) {
@@ -104,9 +113,27 @@ public class MessageHolder extends RecyclerView.ViewHolder {
             progDialogUpdate.dismiss();
             populateGifView(message);
         }
-        changeMessageBG(message);
 
-        this.messageUser.setText(message.getMessageUser());
+        if(message.getUser() != null) {
+            changeMessageBG(message.getUser().getUuid());
+            this.messageUser.setText(message.getUser().getUserName());
+        } else {
+            changeMessageBG(message.getMessageUserID());
+            this.messageUser.setText(message.getMessageUser());
+        }
+
+        messageBase.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                try {
+                    mListener.onMessageLongClick(message);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return true;
+            }
+        });
+
         this.messageTime.setText(DateFormat.format("dd/MM (HH:mm)", message.getMessageTime()));
     }
 
@@ -120,7 +147,7 @@ public class MessageHolder extends RecyclerView.ViewHolder {
             messageGif.setImageDrawable(null);
             placeHolderThumbnail = null;
         }
-        itemView.setOnClickListener(new View.OnClickListener() {
+        messageGif.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 playButtonGif.setVisibility(View.GONE);
@@ -130,13 +157,13 @@ public class MessageHolder extends RecyclerView.ViewHolder {
         });
     }
 
-    private void changeMessageBG(ChatMessage message) {
-        if(message.getMessageUserID() != null) {
-            String possibleSavedColor = Constants.getUserColor(message.getMessageUserID());
+    private void changeMessageBG(String uuid) {
+        if(uuid != null) {
+            String possibleSavedColor = Constants.getUserColor(uuid);
             if(possibleSavedColor != null) {
                 messageBase.setBackgroundColor(Color.parseColor(possibleSavedColor));
             } else {
-                loadMessageColor(message.getMessageUserID());
+                loadMessageColor(uuid);
             }
         } else {
             messageBase.setBackgroundColor(Color.parseColor("#FFFAFAFA"));
@@ -269,3 +296,4 @@ public class MessageHolder extends RecyclerView.ViewHolder {
         }
     }
 }
+

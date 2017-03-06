@@ -11,8 +11,12 @@ import static com.example.linda.giffychat.Entity.MessageViewType.TEXTMESSAGE;
 public class ChatMessage {
 
     private String messageData;
+
     private String messageUser;
     private String messageUserID;
+    private User user;
+    /* I'm gonna remove the strings when I delete the old messages that need the strings */
+
     private long messageTime;
     private boolean gif;
     private int gifOrientation;     // 0 = unknown, 1 = portrait, 2 = landscape
@@ -20,10 +24,11 @@ public class ChatMessage {
     private String thumbnailBase64;
 
     /* A normal chat message, messageData can be text or url to gif */
-    public ChatMessage(String messageData, String messageUser, String messageUserID, boolean gif, int gifOrientation, String thumbnailBase64) {
+    public ChatMessage(String messageData, String messageUser, String messageUserID, User user, boolean gif, int gifOrientation, String thumbnailBase64) {
         this.messageData = messageData;
         this.messageUser = messageUser;
         this.messageUserID = messageUserID;
+        this.user = user;
         this.gif = gif;
         this.gifOrientation = gifOrientation;
         this.thumbnailBase64 = thumbnailBase64;
@@ -43,6 +48,8 @@ public class ChatMessage {
 
     public String getMessageUserID() { return messageUserID; }
 
+    public User getUser() { return user; }
+
     public long getMessageTime() {
         return messageTime;
     }
@@ -50,6 +57,7 @@ public class ChatMessage {
     public boolean getGif() { return gif; }
 
     public int getGifOrientation() { return gifOrientation; }
+
     public String getThumbnailBase64() { return thumbnailBase64; }
 
     public String getAbsolutePath() { return absolutePath; }
@@ -67,6 +75,8 @@ public class ChatMessage {
     public void setMessageData(String messageData) {
         this.messageData = messageData;
     }
+
+    public void setUser(User user) { this.user = user; }
 
     public void gif(boolean gif) { this.gif = gif; }
 

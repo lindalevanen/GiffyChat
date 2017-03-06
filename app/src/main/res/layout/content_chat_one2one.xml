@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/content_chat_room"
@@ -54,10 +55,10 @@
 
     </RelativeLayout>
 
-    <FrameLayout android:id="@+id/userInfoPanel"
+    <!--<FrameLayout android:id="@+id/userInfoPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/confirm_order_appbar_layout"
-        android:gravity="center|top"/>
+        android:gravity="center|top"/>-->
 
 </RelativeLayout>

@@ -74,6 +74,7 @@ public class RegisterFragment extends Fragment {
     }
 
     private void collectUserData() {
+        // TODO: laita passu uudestaan kohta myös!!!
         mEmail = ((EditText) view.findViewById(R.id.emailInput)).getText().toString();
         mPassword = ((EditText) view.findViewById(R.id.passwordInput)).getText().toString();
         mUserName = ((EditText) view.findViewById(R.id.userNameInput)).getText().toString();

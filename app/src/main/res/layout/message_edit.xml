@@ -13,17 +13,12 @@
         android:hint="Type here!"
         android:layout_weight="1"/>
 
-    <!-- TODO: muuta send button simppelimmäks niinku searchis -->
-    <RelativeLayout android:id="@+id/sendMessageLO"
-        android:layout_width="40dp"
+    <ImageView android:id="@+id/sendMessageB"
+        android:layout_width="wrap_content"
+        android:paddingRight="10dp"
+        android:paddingLeft="10dp"
         android:layout_height="match_parent"
-        android:layout_marginLeft="10dp"
-        android:background="?android:selectableItemBackground">
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:background="@drawable/ic_send"/>
-    </RelativeLayout>
+        android:background="?android:selectableItemBackground"
+        android:src="@drawable/ic_send" />
 
 </LinearLayout>

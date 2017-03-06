@@ -15,8 +15,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
 import java.io.IOException;
 
-import static com.example.linda.giffychat.R.layout.room;
-
 /**
  * Contains some global handy helper methods.
  */
