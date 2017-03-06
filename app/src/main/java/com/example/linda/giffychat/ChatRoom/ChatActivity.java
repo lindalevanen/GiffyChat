@@ -229,7 +229,7 @@ public abstract class ChatActivity extends AppCompatActivity
     }
 
     /**
-     * Creates a new instance of the VideoConverter-class with the data from a video taken.
+     * Creates a new instance of the VideoConverter-class with the data from a video taken
      * @param data the result intent from CameraActivity
      */
 
