@@ -485,7 +485,7 @@ public class MainActivity extends AppCompatActivity
             public void onPageScrollStateChanged(int state) {}
         });
 
-        //Let's set the default tab as Favorites test
+        //Let's set the default tab as Favorites
         mViewPager.setCurrentItem(1);
     }
 

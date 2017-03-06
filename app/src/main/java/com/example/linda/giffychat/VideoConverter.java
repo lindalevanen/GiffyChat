@@ -170,7 +170,7 @@ public class VideoConverter extends AsyncTask {
             User user = new User(currentUser.getEmail(), currentUser.getDisplayName(), currentUser.getUid());
             FirebaseDatabase.getInstance()
                     .getReference()
-                    .child("chatMessages")
+                    .child(ref)
                     .child(roomID)
                     .push()
                     .setValue(new ChatMessage(url.toString(),
