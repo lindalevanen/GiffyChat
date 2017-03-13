@@ -1,51 +1,29 @@
 package com.example.linda.giffychat.ChatRoom;
 
 import android.app.ProgressDialog;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.net.Uri;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialcamera.MaterialCamera;
+import com.example.linda.giffychat.Constants;
 import com.example.linda.giffychat.Entity.ChatMessage;
-import com.example.linda.giffychat.Entity.One2OneChat;
-import com.example.linda.giffychat.Entity.Room;
 import com.example.linda.giffychat.Entity.User;
 import com.example.linda.giffychat.ExceptionHandler;
-import com.example.linda.giffychat.HelperMethods;
-import com.example.linda.giffychat.Main.MainActivity;
 import com.example.linda.giffychat.R;
 import com.example.linda.giffychat.VideoConverter;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -59,18 +37,15 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-
-import static com.example.linda.giffychat.R.anim.pop_exit;
 
 /**
  * The base activity for a chat. Contains a toolbar, a RecyclerView for messages and a message-sending field.
  */
 
 public abstract class ChatActivity extends AppCompatActivity
-        implements MessageHolder.onMessageLongClickListener, UserInfoFragment.onButtonPressedListener {
+        implements MessageHolder.onMessageLongClickListener, UserInfoFragment.onButtonPressedListener, VideoConverter.OnGifSent {
 
+    public final static int CAMERA_RQ = 6969;
     private static final String TAG = ChatActivity.class.getSimpleName();
     private FirebaseAnalytics mFirebaseAnalytics;
 
@@ -78,12 +53,14 @@ public abstract class ChatActivity extends AppCompatActivity
     private ProgressBar progBar;
     private ProgressDialog progDialogUpdate;
     private RecyclerView listOfMessages;
+    private RecyclerView.AdapterDataObserver dataObserver;
+
+    private String chatID;
 
     private Toolbar toolbar;
 
-    public SharedPreferences favoritePrefs;
-    public final static int CAMERA_RQ = 6969;
-
+    protected SharedPreferences favoritePrefs;
+    private SharedPreferences messageAmountPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +86,11 @@ public abstract class ChatActivity extends AppCompatActivity
     //public abstract int getView();
 
     public abstract void initActivity();
+
+    public abstract void sendNotification(String message, boolean isGif);
+
+    @Override
+    public abstract void onGifSent();
 
     /**
      * A bit gum solution but I couldn't figure out which method is triggered when no data is received
@@ -138,6 +120,7 @@ public abstract class ChatActivity extends AppCompatActivity
      */
 
     public void initMessages(String reference, String id) {
+        chatID = id;
         listOfMessages = (RecyclerView) findViewById(R.id.chatMessageList);
 
         adapter = new MessageRecyclerAdapter(ChatMessage.class, R.layout.md_listitem, MessageHolder.class,
@@ -148,7 +131,7 @@ public abstract class ChatActivity extends AppCompatActivity
         manager.setStackFromEnd(true);
         listOfMessages.setLayoutManager(manager);
 
-        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+        dataObserver = new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
                 super.onItemRangeInserted(positionStart, itemCount);
@@ -156,6 +139,9 @@ public abstract class ChatActivity extends AppCompatActivity
                 if(progBar.getVisibility() == View.VISIBLE) {
                     progBar.setVisibility(View.INVISIBLE);
                 }
+
+                updateMessageAmount(adapter.getItemCount());
+                updateMessageCountSP();
 
                 int friendlyMessageCount = adapter.getItemCount();
                 int lastVisiblePosition =
@@ -169,7 +155,9 @@ public abstract class ChatActivity extends AppCompatActivity
                     listOfMessages.scrollToPosition(positionStart);
                 }
             }
-        });
+        };
+
+        adapter.registerAdapterDataObserver(dataObserver);
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(listOfMessages.getContext(),
                 manager.getOrientation());
@@ -179,8 +167,9 @@ public abstract class ChatActivity extends AppCompatActivity
         listOfMessages.setAdapter(adapter);
     }
 
-    public void initUI(final String reference, final String id) {
+    protected abstract void updateMessageAmount(int amount);
 
+    public void initEditMessage(final String reference, final String id) {
         ((ImageView) findViewById(R.id.sendMessageB)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -200,10 +189,13 @@ public abstract class ChatActivity extends AppCompatActivity
                                     false, 0, null)
                             );
                     chatMessageInput.setText("");
+                    sendNotification(message, false);
                 }
             }
         });
     }
+
+
 
     /**
      * Triggers a video/gif-recording event with the MaterialCamera-library.
@@ -245,9 +237,18 @@ public abstract class ChatActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
+        adapter.unregisterAdapterDataObserver(dataObserver);
         super.onDestroy();
         Runtime.getRuntime().gc();
         deleteCache(this);
+    }
+
+    private void updateMessageCountSP() {
+        messageAmountPrefs = getSharedPreferences(Constants.messagePrefsName, Context.MODE_PRIVATE);
+        if(chatID != null) {
+            int messageAmount = adapter.getItemCount();
+            messageAmountPrefs.edit().putInt(chatID, messageAmount).apply();
+        }
     }
 
     public static void deleteCache(Context context) {

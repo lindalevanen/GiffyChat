@@ -5,9 +5,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.ParcelFileDescriptor;
+import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -15,7 +14,6 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
@@ -33,11 +31,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.linda.giffychat.ChatRoom.ChatActivity;
 import com.example.linda.giffychat.ChatRoom.ChatOne2OneActivity;
 import com.example.linda.giffychat.ChatRoom.ChatRoomActivity;
 import com.example.linda.giffychat.Constants;
-import com.example.linda.giffychat.Entity.One2OneChat;
 import com.example.linda.giffychat.Entity.Room;
 import com.example.linda.giffychat.ExceptionHandler;
 import com.example.linda.giffychat.FeatureFragments.SearchFragment;
@@ -51,8 +47,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.onesignal.OSNotification;
+import com.onesignal.OSNotificationOpenResult;
+import com.onesignal.OneSignal;
 
-import java.io.FileDescriptor;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -69,8 +70,7 @@ public class MainActivity extends AppCompatActivity
 
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final int GALLERY_PHOTO_REQUEST_CODE = 1;
-    public static final String favoritePrefsName = "favoritePrefs";
-    public static final String booleanPrefsName = "booleanPrefs";
+    private static String notificationChatID;
     private SharedPreferences favoritePrefs;
 
     private RoomTabAdapter mTabAdapter;
@@ -92,6 +92,13 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        initOneSignal();
+
+        if(notificationChatID != null) {
+            openOne2OneChat(notificationChatID);
+            notificationChatID = null;
+        }
+
         Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this,
                 MainActivity.class));
 
@@ -103,6 +110,61 @@ public class MainActivity extends AppCompatActivity
         });
 
         initTabStructure();
+    }
+
+    public void initOneSignal() {
+        OneSignal.startInit(this)
+                .setNotificationReceivedHandler(new OneSignal.NotificationReceivedHandler() {
+                    @Override
+                    public void notificationReceived(OSNotification notification) {
+
+                    }
+                })
+                .setNotificationOpenedHandler(new OneSignal.NotificationOpenedHandler() {
+                    @Override
+                    public void notificationOpened(OSNotificationOpenResult result) {
+                        try {
+                            JSONObject additionalData = result.notification.payload.additionalData;
+                            String chatID = additionalData.getString("chatID");
+                            notificationChatID = chatID;
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                })
+                .inFocusDisplaying(null)
+                .init();
+        savePlayerID();
+    }
+
+    /**
+     * Saves the OneSignal-playerID if it has not been saved.
+     */
+
+    private void savePlayerID() {
+        final String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference("userData/"+userID);
+        rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                if (!snapshot.hasChild("playerID")) {
+                    final DatabaseReference rootRef = FirebaseDatabase.getInstance()
+                            .getReference("userData/"+userID+"/playerID");
+                    OneSignal.idsAvailable(new OneSignal.IdsAvailableHandler() {
+                        @Override
+                        public void idsAvailable(String userId, String registrationId) {
+                            rootRef.setValue(userId);
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.d(TAG, databaseError.getMessage());
+            }
+        });
     }
 
     /**
@@ -332,7 +394,7 @@ public class MainActivity extends AppCompatActivity
 
     private void favoriteRoom(Room room) {
         favoritePrefs = getApplication()
-                .getSharedPreferences(MainActivity.favoritePrefsName, Context.MODE_PRIVATE);
+                .getSharedPreferences(Constants.favoritePrefsName, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = favoritePrefs.edit();
         editor.putBoolean(room.getId(), true);
         editor.apply();
@@ -421,11 +483,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void openOne2OneChat(One2OneChat chat) {
+    public void openOne2OneChat(String chatID) {
         try {
             Intent intent = new Intent(getApplicationContext(), ChatOne2OneActivity.class);
             Bundle b = new Bundle();
-            b.putString("chatID", chat.getId());
+            b.putString("chatID", chatID);
             intent.putExtras(b);
             startActivity(intent);
         } catch (Exception e) {

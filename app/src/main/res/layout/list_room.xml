@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="5dp">
 
     <ImageView android:id="@+id/roomIcon"
@@ -21,5 +22,15 @@
         android:paddingEnd="20dp"
         android:paddingTop="20dp"
         android:paddingBottom="20dp" />
+
+    <TextView android:id="@+id/newMessageCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="true"
+        android:textColor="@android:color/white"
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp"
+        android:layout_marginEnd="8dp" />
 
 </RelativeLayout>

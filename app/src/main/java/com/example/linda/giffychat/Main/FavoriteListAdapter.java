@@ -1,6 +1,7 @@
 package com.example.linda.giffychat.Main;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
@@ -13,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.linda.giffychat.Constants;
 import com.example.linda.giffychat.Entity.Room;
 import com.example.linda.giffychat.HelperMethods;
 import com.example.linda.giffychat.R;
@@ -44,6 +46,7 @@ public class FavoriteListAdapter extends ArrayAdapter<Room> {
         }
         TextView titleView = (TextView) convertView.findViewById(R.id.roomTitle);
         ImageView iconView = (ImageView) convertView.findViewById(R.id.roomIcon);
+        TextView newMessageCount = (TextView) convertView.findViewById(R.id.newMessageCount);
         if(room.getBase64RoomImage() != null) {
 
             Bitmap decoded = HelperMethods.getBitmapFromBase64(room.getBase64RoomImage());
@@ -54,6 +57,24 @@ public class FavoriteListAdapter extends ArrayAdapter<Room> {
         } else {
             iconView.setImageResource(R.drawable.ic_giffy);
         }
+
+        if(room.getMessageCount() != 0) {
+            SharedPreferences messageCountPrefs =
+                    getContext().getSharedPreferences(Constants.messagePrefsName, Context.MODE_PRIVATE);
+            int messageAmount = messageCountPrefs.getInt(room.getId(), 0);
+            int difference = room.getMessageCount() - messageAmount;
+            if(messageAmount != 0 && difference != 0) {
+                newMessageCount.setText(String.valueOf(difference));
+                newMessageCount.setBackgroundResource(R.drawable.bg_circle);
+            } else {
+                newMessageCount.setText("");
+                newMessageCount.setBackground(null);
+            }
+        } else {
+            newMessageCount.setText("");
+            newMessageCount.setBackground(null);
+        }
+
         iconView.setAdjustViewBounds(true);
         iconView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         titleView.setText(room.getTitle());

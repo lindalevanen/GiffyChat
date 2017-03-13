@@ -11,6 +11,9 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
+        manifestPlaceholders = [onesignal_app_id: "f4bcd817-b42b-4e31-802d-9122a4908e28",
+                                // Project number pulled from dashboard, local value is ignored.
+                                onesignal_google_project_number: "REMOTE"]
     }
     buildTypes {
         release {
@@ -44,17 +47,17 @@ dependencies {
     compile 'com.sothree.slidinguppanel:library:3.3.1'
     compile 'com.github.wseemann:FFmpegMediaMetadataRetriever:1.0.14'
     compile 'com.google.firebase:firebase-crash:10.2.0'
+
+    compile 'com.onesignal:OneSignal:3.+@aar'
+
+    // Required for OneSignal, even if you have added FCM.
+    compile 'com.google.android.gms:play-services-gcm:10.2.0'
+
+
+    // Required for geotagging
+    compile "com.google.android.gms:play-services-location:10.2.0"
+
     testCompile 'junit:junit:4.12'
 }
-
-
-
-
-
-
-
-
-
-
 
 apply plugin: 'com.google.gms.google-services'

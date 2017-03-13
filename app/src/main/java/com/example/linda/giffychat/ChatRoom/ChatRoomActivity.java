@@ -8,16 +8,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.icu.text.LocaleDisplayNames;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -32,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialcamera.MaterialCamera;
+import com.example.linda.giffychat.Constants;
 import com.example.linda.giffychat.Entity.ChatMessage;
 import com.example.linda.giffychat.Entity.One2OneChat;
 import com.example.linda.giffychat.Entity.Room;
@@ -49,9 +47,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
-import static android.R.attr.data;
-import static android.R.id.message;
 
 /**
  * A public or private chat room.
@@ -84,12 +79,27 @@ public class ChatRoomActivity extends ChatActivity {
         }
     }
 
+    @Override
+    public void sendNotification(String message, boolean isGif) {}
+
+    @Override
+    public void onGifSent() {}
+
+    @Override
+    protected void updateMessageAmount(int amount) {
+        String path = "chatRooms/"+ mRoomID;
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference(path);
+        ref.child("messageCount").setValue(amount);
+    }
+
     private void initActionBar() {
         if(roomLogoBase64 != null) {
             Bitmap icon = HelperMethods.getBitmapFromBase64(roomLogoBase64);
             RoundedBitmapDrawable dr = HelperMethods.giveBitmapRoundedCorners(icon, this);
             getSupportActionBar().setLogo(dr);
             getSupportActionBar().setTitle("   "+mRoom.getTitle());
+        } else {
+            getSupportActionBar().setTitle(mRoom.getTitle());
         }
     }
 
@@ -105,7 +115,7 @@ public class ChatRoomActivity extends ChatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 mRoom = dataSnapshot.getValue(Room.class);
-                initUI(ref, mRoomID);
+                initEditMessage(ref, mRoomID);
                 initMessages(ref, mRoomID);
                 hideProgbarIfNoMessages(ref, mRoomID);
                 initActionBar();
@@ -340,7 +350,7 @@ public class ChatRoomActivity extends ChatActivity {
      */
 
     private void toggleFavorite() {
-        favoritePrefs = this.getSharedPreferences(MainActivity.favoritePrefsName, Context.MODE_PRIVATE);
+        favoritePrefs = this.getSharedPreferences(Constants.favoritePrefsName, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = favoritePrefs.edit();
         if(!favoritePrefs.contains(mRoomID)) {
             // Set as favorite
@@ -402,8 +412,9 @@ public class ChatRoomActivity extends ChatActivity {
         final FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         final String chatID1 = currentUser.getUid() + user.getUuid();
         final String chatID2 = user.getUuid() + currentUser.getUid();
+        String path = "userData/"+ currentUser.getUid() + "/one2oneChats";
         DatabaseReference roomRef =
-                FirebaseDatabase.getInstance().getReference().child("one2oneChats");
+                FirebaseDatabase.getInstance().getReference(path);
         ValueEventListener roomListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -416,7 +427,7 @@ public class ChatRoomActivity extends ChatActivity {
                         // create a new room
                         User cUser = new User(currentUser.getEmail(), currentUser.getDisplayName(), currentUser.getUid());
                         One2OneChat newChat = createOne2OneChat(chatID1, cUser, user);
-                        openOne2OneChat(newChat);
+                        openOne2OneChat(newChat.getId());
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -439,14 +450,16 @@ public class ChatRoomActivity extends ChatActivity {
      */
 
     private void getChatDataAndOpenRoom(final String chatid) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        String path = "userData/" + currentUser.getUid() + "/one2oneChats/"+ chatid;
         DatabaseReference roomRef =
-                FirebaseDatabase.getInstance().getReference().child("one2oneChats").child(chatid);
+                FirebaseDatabase.getInstance().getReference(path);
         ValueEventListener roomListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 try {
                     One2OneChat newChat = dataSnapshot.getValue(One2OneChat.class);
-                    openOne2OneChat(newChat);
+                    openOne2OneChat(newChat.getId());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -464,12 +477,7 @@ public class ChatRoomActivity extends ChatActivity {
 
     private One2OneChat createOne2OneChat(String chatID, User currentUser, User user2) {
         try {
-            // Creates a new chat to db
-            //DatabaseReference roomRef =
-            //        FirebaseDatabase.getInstance().getReference().child("one2oneChats").child(chatID);
             One2OneChat newChat = new One2OneChat(chatID, currentUser, user2);
-            //roomRef.setValue(newChat);
-
             // Sets the new chat id for the users to be easily later fetched
             sendNewChatToUser(newChat, currentUser.getUuid());
             sendNewChatToUser(newChat, user2.getUuid());
@@ -508,11 +516,11 @@ public class ChatRoomActivity extends ChatActivity {
         userDataRef.addListenerForSingleValueEvent(roomListener);
     }
 
-    private void openOne2OneChat(One2OneChat chat) {
+    private void openOne2OneChat(String chatID) {
         try {
             Intent intent = new Intent(getApplicationContext(), ChatOne2OneActivity.class);
             Bundle b = new Bundle();
-            b.putString("chatID", chat.getId());
+            b.putString("chatID", chatID);
             intent.putExtras(b);
             startActivity(intent);
             finish();
@@ -560,7 +568,7 @@ public class ChatRoomActivity extends ChatActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        favoritePrefs = this.getSharedPreferences(MainActivity.favoritePrefsName, Context.MODE_PRIVATE);
+        favoritePrefs = this.getSharedPreferences(Constants.favoritePrefsName, Context.MODE_PRIVATE);
         if(favoritePrefs.contains(mRoomID)) {
             menu.findItem(R.id.add_favorite).setVisible(false);
             menu.findItem(R.id.remove_favorite).setVisible(true);

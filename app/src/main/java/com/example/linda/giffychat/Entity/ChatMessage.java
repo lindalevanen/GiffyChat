@@ -1,8 +1,5 @@
 package com.example.linda.giffychat.Entity;
 
-import android.content.SharedPreferences;
-import android.net.Uri;
-
 import java.util.Date;
 
 import static com.example.linda.giffychat.Entity.MessageViewType.GIFMESSAGE;
@@ -22,6 +19,7 @@ public class ChatMessage {
     private int gifOrientation;     // 0 = unknown, 1 = portrait, 2 = landscape
     private String absolutePath;
     private String thumbnailBase64;
+    private MessageViewType type;
 
     /* A normal chat message, messageData can be text or url to gif */
     public ChatMessage(String messageData, String messageUser, String messageUserID, User user, boolean gif, int gifOrientation, String thumbnailBase64) {
@@ -33,7 +31,10 @@ public class ChatMessage {
         this.gifOrientation = gifOrientation;
         this.thumbnailBase64 = thumbnailBase64;
         // Initialize to current time
-        messageTime = new Date().getTime();
+        this.messageTime = new Date().getTime();
+
+        if(gif) this.type = GIFMESSAGE;
+        else this.type = TEXTMESSAGE;
     }
 
     public ChatMessage() {}
@@ -76,6 +77,8 @@ public class ChatMessage {
         this.messageData = messageData;
     }
 
+    public void setType(MessageViewType type) { this.type = type; }
+
     public void setUser(User user) { this.user = user; }
 
     public void gif(boolean gif) { this.gif = gif; }
@@ -85,7 +88,6 @@ public class ChatMessage {
     public void setThumbnailBase64(String thumbnailBase64) { this.thumbnailBase64 = thumbnailBase64; }
 
     public void setAbsolutePath(String absolutePath) { this.absolutePath = absolutePath; }
-
 
     public MessageViewType getType() {
         if(gif) return GIFMESSAGE;

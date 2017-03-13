@@ -9,7 +9,6 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.gifencoder.AnimatedGifEncoder;
 import com.example.linda.giffychat.Entity.ChatMessage;
 import com.example.linda.giffychat.Entity.User;
@@ -28,11 +27,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 import wseemann.media.FFmpegMediaMetadataRetriever;
-
-import static android.R.attr.bitmap;
-import static android.R.attr.rotation;
-import static android.R.attr.thumb;
-import static android.R.attr.thumbnail;
 
 /**
  * A class for converting a video in device's memory into a gif to be sent to server.
@@ -54,6 +48,12 @@ public class VideoConverter extends AsyncTask {
     private byte[] gif;
     private String timestamp;
     private String thumbnailbase64;
+
+    private VideoConverter.OnGifSent listener;
+
+    public interface OnGifSent {
+        void onGifSent();
+    }
 
     /**
      * Creates a new instance of the VideoConverter.
@@ -79,6 +79,7 @@ public class VideoConverter extends AsyncTask {
         this.cameraPosition = cameraPosition;
         this.cameraOrientation = cameraOrientation;
         this.cameraRotation = cameraRotation;
+        this.listener = (OnGifSent) context;
 
         Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(context,
                 VideoConverter.class));
@@ -149,6 +150,9 @@ public class VideoConverter extends AsyncTask {
                         // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                         Uri url = taskSnapshot.getDownloadUrl();
                         sendPathToDB(url);
+                        if(ref.equals("one2oneMessages")) {
+                            listener.onGifSent();
+                        }
                     }
                 });
             } catch (Exception e) {

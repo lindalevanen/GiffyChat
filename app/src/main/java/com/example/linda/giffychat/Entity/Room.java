@@ -9,6 +9,7 @@ public class Room {
     private String title;
     private List<String> members;
     private String base64RoomImage;
+    private int messageCount;
 
     public Room() {}
 
@@ -17,6 +18,7 @@ public class Room {
         this.title = title;
         this.members = members;
         this.base64RoomImage = base64RoomImage;
+        messageCount = 0;
     }
 
     public void setTitle(String title) {
@@ -33,6 +35,8 @@ public class Room {
 
     public void setBase42RoomImage(String base64RoomImage) { this.base64RoomImage = base64RoomImage; }
 
+    public void setMessageCount(int messageCount) { this.messageCount = messageCount; }
+
     public String getTitle() {
         return title;
     }
@@ -46,4 +50,6 @@ public class Room {
     }
 
     public String getBase64RoomImage() { return base64RoomImage; }
+
+    public int getMessageCount() { return messageCount; }
 }

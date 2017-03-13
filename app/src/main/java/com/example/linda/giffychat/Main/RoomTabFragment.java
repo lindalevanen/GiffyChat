@@ -18,6 +18,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.linda.giffychat.Constants;
 import com.example.linda.giffychat.Entity.One2OneChat;
 import com.example.linda.giffychat.Entity.Room;
 import com.example.linda.giffychat.HelperMethods;
@@ -33,8 +34,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Map;
-
-import static com.example.linda.giffychat.R.layout.list_room;
 
 public class RoomTabFragment extends Fragment {
 
@@ -53,12 +52,13 @@ public class RoomTabFragment extends Fragment {
     private FirebaseListAdapter<One2OneChat> contactListAdapter;
     private SharedPreferences favoritePrefs;
     private SharedPreferences booleanPrefs;
+    private SharedPreferences messageCountPrefs;
 
     public RoomTabFragment() {}
 
     public interface onRoomOpenListener {
         void openRoomIfMember(Room room);
-        void openOne2OneChat(One2OneChat chat);
+        void openOne2OneChat(String chatID);
     }
 
     /**
@@ -114,7 +114,7 @@ public class RoomTabFragment extends Fragment {
                     openRoomIfMember(room);
                 } else if(tabNo == 3) {
                     One2OneChat chat = (One2OneChat) adapterView.getItemAtPosition(i);
-                    openOne2OneChat(chat);
+                    openOne2OneChat(chat.getId());
                 }
 
             }
@@ -134,18 +134,33 @@ public class RoomTabFragment extends Fragment {
                 progressBar.setVisibility(View.INVISIBLE);
                 TextView titleView = (TextView) v.findViewById(R.id.roomTitle);
                 ImageView iconView = (ImageView) v.findViewById(R.id.roomIcon);
+                TextView newMessageCount = (TextView) v.findViewById(R.id.newMessageCount);
 
                 iconView.setAdjustViewBounds(true);
                 iconView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 if(room.getBase64RoomImage() != null) {
-
                     Bitmap decoded = HelperMethods.getBitmapFromBase64(room.getBase64RoomImage());
                     Bitmap ccBtm = HelperMethods.centerCropBitmap(decoded);
                     RoundedBitmapDrawable dr = HelperMethods.giveBitmapRoundedCorners(ccBtm, getContext());
-
                     iconView.setImageDrawable(dr);
                 } else {
                     iconView.setImageResource(R.drawable.ic_giffy);
+                }
+
+                if(room.getMessageCount() != 0) {
+                    messageCountPrefs = getContext().getSharedPreferences(Constants.messagePrefsName, Context.MODE_PRIVATE);
+                    int messageAmount = messageCountPrefs.getInt(room.getId(), 0);
+                    int difference = room.getMessageCount() - messageAmount;
+                    if(messageAmount != 0 && difference != 0) {
+                        newMessageCount.setText(String.valueOf(difference));
+                        newMessageCount.setBackgroundResource(R.drawable.bg_circle);
+                    } else {
+                        newMessageCount.setText("");
+                        newMessageCount.setBackground(null);
+                    }
+                } else {
+                    newMessageCount.setText("");
+                    newMessageCount.setBackground(null);
                 }
 
                 titleView.setText(room.getTitle());
@@ -163,7 +178,7 @@ public class RoomTabFragment extends Fragment {
         TextView noFavsText = (TextView) rootView.findViewById(R.id.noFavsText);
         noFavsText.setVisibility(View.GONE);
 
-        favoritePrefs = getContext().getSharedPreferences(MainActivity.favoritePrefsName, Context.MODE_PRIVATE);
+        favoritePrefs = getContext().getSharedPreferences(Constants.favoritePrefsName, Context.MODE_PRIVATE);
         Map<String, ?> favorites = favoritePrefs.getAll();
         ArrayList<String> favoriteRoomIds = new ArrayList<String>();
 
@@ -229,12 +244,30 @@ public class RoomTabFragment extends Fragment {
                 progressBar.setVisibility(View.INVISIBLE);
                 noContactsText.setVisibility(View.INVISIBLE);
                 TextView contactText = (TextView) v.findViewById(R.id.contactText);
+                TextView newMessageCount = (TextView) v.findViewById(R.id.newMessageCount);
 
                 if(chat.getMember1().getUuid().equals(user.getUid())) {
                     contactText.setText(chat.getMember2().getUserName());
                 } else {
                     contactText.setText(chat.getMember1().getUserName());
                 }
+
+                if(chat.getMessageCount() != 0) {
+                    messageCountPrefs = getContext().getSharedPreferences(Constants.messagePrefsName, Context.MODE_PRIVATE);
+                    int messageAmount = messageCountPrefs.getInt(chat.getId(), 0);
+                    int difference = chat.getMessageCount() - messageAmount;
+                    if(messageAmount != 0 && difference != 0) {
+                        newMessageCount.setText(String.valueOf(difference));
+                        newMessageCount.setBackgroundResource(R.drawable.bg_circle);
+                    } else {
+                        newMessageCount.setText("");
+                        newMessageCount.setBackground(null);
+                    }
+                } else {
+                    newMessageCount.setText("");
+                    newMessageCount.setBackground(null);
+                }
+
             }
         };
 
@@ -277,6 +310,7 @@ public class RoomTabFragment extends Fragment {
     }
 
 
+
     private void openRoomIfMember(Room room) {
         if(mListener != null) {
             mListener.openRoomIfMember(room);
@@ -285,9 +319,9 @@ public class RoomTabFragment extends Fragment {
         }
     }
 
-    private void openOne2OneChat(One2OneChat chat) {
+    private void openOne2OneChat(String chatID) {
         if(mListener != null) {
-            mListener.openOne2OneChat(chat);
+            mListener.openOne2OneChat(chatID);
         } else {
             Log.d(getTag(), "listener in RegisterFragment is null");
         }
