@@ -130,6 +130,11 @@ public class ChatRoomActivity extends ChatActivity {
         roomRef.addListenerForSingleValueEvent(roomListener);
     }
 
+    /**
+     * Creates a dialog for the user to give the email of the new user to be allowed in this private chat.
+     * (So should only be called when the room is private)
+     */
+
     private void askNewMemberInfo() {
         LayoutInflater li = LayoutInflater.from(this);
         final View dialogLO = li.inflate(R.layout.dialog_add_room_member, null);
@@ -364,6 +369,12 @@ public class ChatRoomActivity extends ChatActivity {
         editor.apply();
     }
 
+    /**
+     * Changes the logo of this room.
+     * @param imageData the imagedata as uri
+     * @return a scaled and cropped bitmap created of the imagedata given as a parameter.
+     */
+
     private Bitmap changeCurrentRoomLogo(Uri imageData) {
         try {
             Bitmap bmp = HelperMethods.getBitmapFromUri(imageData, this);
@@ -474,6 +485,15 @@ public class ChatRoomActivity extends ChatActivity {
         roomRef.addListenerForSingleValueEvent(roomListener);
     }
 
+    /**
+     * Creates a new one2oneChat-object (has only 2 users) and sends the chat metadata to both users.
+     * Might do this differently later, not cool when duplicates. It's just easier to do it like this so
+     * the user can set it's own one2oneChat-list as a reference to their ContactListAdapter.
+     * @param chatID the id of the chat
+     * @param currentUser this user
+     * @param user2 the other user
+     * @return a new one2oneChat-object
+     */
 
     private One2OneChat createOne2OneChat(String chatID, User currentUser, User user2) {
         try {
@@ -494,7 +514,6 @@ public class ChatRoomActivity extends ChatActivity {
                 FirebaseDatabase.getInstance().getReference().child("userData").child(userID);
 
         /* Get the data inside userDataRef, if there's no "one2oneChats" child, set new value there with the new chat */
-
         ValueEventListener roomListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -515,6 +534,11 @@ public class ChatRoomActivity extends ChatActivity {
         };
         userDataRef.addListenerForSingleValueEvent(roomListener);
     }
+
+    /**
+     * When opening a one2oneChat in chatRoom, start the new activity and finish this one.
+     * @param chatID the one2oneChatID.
+     */
 
     private void openOne2OneChat(String chatID) {
         try {
@@ -540,8 +564,13 @@ public class ChatRoomActivity extends ChatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
+
+    /**
+     * Adds a new UserInfoFragment to be shown at the top of the chat that enables the current user
+     * to send a private message to the other user via a one2oneChat.
+     * @param user the user whose info is to be shown
+     */
 
     private void showUserInfo(User user) {
         try {

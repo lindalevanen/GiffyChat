@@ -49,7 +49,7 @@ public class MessageRecyclerAdapter extends FirebaseRecyclerAdapter<ChatMessage,
                 return new MessageHolder(messageView, viewType, context);
             case R.layout.message_gif_landscape:
                 messageView = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.message_gif_landscape, parent, false); //TÄHÄN JÄIN, PITÄÄ LAITTAA LANDSCAPET KUNTOON
+                        .inflate(R.layout.message_gif_landscape, parent, false);
                 return new MessageHolder(messageView, viewType, context);
         }
         return super.onCreateViewHolder(parent, viewType);
@@ -62,6 +62,8 @@ public class MessageRecyclerAdapter extends FirebaseRecyclerAdapter<ChatMessage,
             case TEXTMESSAGE:
                 return R.layout.message_text;
             case GIFMESSAGE:
+                /* If the gif orientation isn't defined (old gifs sent to server),
+                   set the gif orientation to landscape, looks better */
                 if(message.getGifOrientation() != 0) {
                     if(message.getGifOrientation() == 1) {
                         return R.layout.message_gif_portrait;
@@ -76,7 +78,7 @@ public class MessageRecyclerAdapter extends FirebaseRecyclerAdapter<ChatMessage,
     }
 
     /**
-     * A possible solution to outOfMemoryError (not really). Fixed memoryerror by loading gifs on touch.
+     * A possible solution to outOfMemoryError (not really). !Fixed memoryerror by loading gifs on touch!
      * @param holder
      */
 

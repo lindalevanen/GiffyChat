@@ -1,8 +1,5 @@
 package com.example.linda.giffychat;
 
-import com.example.linda.giffychat.Entity.User;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -16,8 +13,6 @@ public class Constants {
     public static final String messagePrefsName = "messagePrefs";
 
     public static HashMap<String, String> userColors;
-    public static ArrayList<User> currentUsers;
-    public static String ownPlayerID;
     public static String partnerPlayerID;
 
     public static void initUserColors() {

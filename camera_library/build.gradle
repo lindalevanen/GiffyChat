@@ -46,4 +46,5 @@ dependencies {
     compile "com.afollestad.material-dialogs:core:$MD_VERSION"
 }
 
-apply from: 'https://raw.githubusercontent.com/afollestad/aidanfollestad.com/master/android-lib-release.gradle'
+// doesn't seem like the following is needed.
+//apply from: 'https://raw.githubusercontent.com/afollestad/aidanfollestad.com/master/android-lib-release.gradle'

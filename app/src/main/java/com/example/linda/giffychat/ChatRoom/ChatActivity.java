@@ -50,6 +50,7 @@ public abstract class ChatActivity extends AppCompatActivity
     private FirebaseAnalytics mFirebaseAnalytics;
 
     private FirebaseRecyclerAdapter adapter;
+    private LinearLayoutManager manager;
     private ProgressBar progBar;
     private ProgressDialog progDialogUpdate;
     private RecyclerView listOfMessages;
@@ -83,14 +84,14 @@ public abstract class ChatActivity extends AppCompatActivity
         initActivity();
     }
 
-    //public abstract int getView();
-
     public abstract void initActivity();
 
     public abstract void sendNotification(String message, boolean isGif);
 
     @Override
     public abstract void onGifSent();
+
+    protected abstract void updateMessageAmount(int amount);
 
     /**
      * A bit gum solution but I couldn't figure out which method is triggered when no data is received
@@ -127,7 +128,7 @@ public abstract class ChatActivity extends AppCompatActivity
                 FirebaseDatabase.getInstance().getReference().child(reference).child(id),
                 this, progDialogUpdate);
 
-        final LinearLayoutManager manager = new LinearLayoutManager(this);
+        manager = new LinearLayoutManager(this);
         manager.setStackFromEnd(true);
         listOfMessages.setLayoutManager(manager);
 
@@ -143,22 +144,13 @@ public abstract class ChatActivity extends AppCompatActivity
                 updateMessageAmount(adapter.getItemCount());
                 updateMessageCountSP();
 
-                int friendlyMessageCount = adapter.getItemCount();
-                int lastVisiblePosition =
-                        manager.findLastCompletelyVisibleItemPosition();
-                // If the recyclerview is initially being loaded or the
-                // user is at the bottom of the list, scroll to the bottom
-                // of the list to show the newly added message.
-                if (lastVisiblePosition == -1 ||
-                        (positionStart >= (friendlyMessageCount - 1) &&
-                                lastVisiblePosition == (positionStart - 1))) {
-                    listOfMessages.scrollToPosition(positionStart);
-                }
+                scrollToStart(positionStart);
             }
         };
 
         adapter.registerAdapterDataObserver(dataObserver);
 
+        /* Set a divider decoration to the messaglist */
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(listOfMessages.getContext(),
                 manager.getOrientation());
         dividerItemDecoration.setDrawable(getResources().getDrawable(R.drawable.divider_drawable, null));
@@ -167,9 +159,33 @@ public abstract class ChatActivity extends AppCompatActivity
         listOfMessages.setAdapter(adapter);
     }
 
-    protected abstract void updateMessageAmount(int amount);
+    /**
+     * Scrolls to
+     * @param positionStart
+     */
 
-    public void initEditMessage(final String reference, final String id) {
+    private void scrollToStart(int positionStart) {
+        int friendlyMessageCount = adapter.getItemCount();
+        int lastVisiblePosition =
+                manager.findLastCompletelyVisibleItemPosition();
+        // If the recyclerview is initially being loaded or the
+        // user is at the bottom of the list, scroll to the bottom
+        // of the list to show the newly added message.
+        if (lastVisiblePosition == -1 ||
+                (positionStart >= (friendlyMessageCount - 1) &&
+                        lastVisiblePosition == (positionStart - 1))) {
+            listOfMessages.scrollToPosition(positionStart);
+        }
+    }
+
+    /**
+     * Sets an OnClickListener for the send message -button. It sends the message to db and sends
+     * a notification to chatpartner (atm only when the chat is a one2one-chat.
+     * @param reference reference where the request to init came from (chatroom or one2one)
+     * @param chatID the chat/room id
+     */
+
+    public void initEditMessage(final String reference, final String chatID) {
         ((ImageView) findViewById(R.id.sendMessageB)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -182,7 +198,7 @@ public abstract class ChatActivity extends AppCompatActivity
                     FirebaseDatabase.getInstance()
                             .getReference()
                             .child(reference)
-                            .child(id)
+                            .child(chatID)
                             .push()
                             .setValue(new ChatMessage(message,
                                     user.getUserName(), user.getUuid(), user,
@@ -194,8 +210,6 @@ public abstract class ChatActivity extends AppCompatActivity
             }
         });
     }
-
-
 
     /**
      * Triggers a video/gif-recording event with the MaterialCamera-library.
@@ -254,7 +268,9 @@ public abstract class ChatActivity extends AppCompatActivity
     public static void deleteCache(Context context) {
         try {
             File dir = context.getCacheDir();
-            deleteDir(dir);
+            if(deleteDir(dir)) {
+                Log.d(TAG, "Deleting cache failed.");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
